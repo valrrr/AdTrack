@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup Guide — Ad Tracker</title>
+  <style>
+    :root {
+      --page: #f3f4f6; --surface: #fff; --border: #e5e7eb;
+      --text: #111827; --muted: #6b7280; --subtle: #9ca3af;
+      --accent: #6366f1; --accent-light: #eef2ff;
+      --green: #059669; --green-light: #ecfdf5; --green-border: #a7f3d0;
+      --nav: #1f2937; --radius: 8px;
+      --code-bg: #f9fafb;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      font-size: 14px; background: var(--page); color: var(--text); line-height: 1.6;
+    }
+
+    /* Nav */
+    .nav {
+      height: 52px; background: var(--nav);
+      display: flex; align-items: center; padding: 0 32px;
+      gap: 16px; position: sticky; top: 0; z-index: 10;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-mark {
+      width: 26px; height: 26px; background: var(--accent); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #fff;
+    }
+    .nav-title { font-weight: 700; font-size: 15px; color: #fff; }
+    .nav-sep { color: rgba(255,255,255,0.2); font-size: 18px; }
+    .nav-page { color: rgba(255,255,255,0.5); font-size: 14px; }
+
+    /* Layout */
+    .layout { display: flex; max-width: 1100px; margin: 0 auto; padding: 40px 32px; gap: 40px; }
+
+    /* Sidebar TOC */
+    .toc {
+      width: 200px; flex-shrink: 0;
+      position: sticky; top: 72px; align-self: flex-start;
+    }
+    .toc-title { font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--muted); margin-bottom: 10px; }
+    .toc a {
+      display: block; font-size: 13px; color: var(--muted);
+      text-decoration: none; padding: 4px 0; transition: color 0.15s;
+      border-left: 2px solid transparent; padding-left: 10px; margin-left: -12px;
+    }
+    .toc a:hover { color: var(--text); }
+    .toc a.sub { padding-left: 20px; font-size: 12px; }
+
+    /* Content */
+    .content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 36px; }
+
+    .section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .section-head {
+      padding: 18px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-num {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--accent-light);
+      color: var(--accent); font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-head h2 { font-size: 15px; font-weight: 700; }
+    .section-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    h3 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+    p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+    ol, ul { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+    li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    li strong { color: var(--text); }
+
+    .step-block { display: flex; flex-direction: column; gap: 8px; }
+
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+      overflow-x: auto; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px; line-height: 1.6; color: var(--text);
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
+      background: var(--code-bg); padding: 1px 5px; border-radius: 4px;
+      border: 1px solid var(--border); color: var(--accent);
+    }
+    pre code { background: none; border: none; padding: 0; color: inherit; }
+
+    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .badge {
+      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+      background: var(--green-light); color: var(--green); border: 1px solid var(--green-border);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 12px; background: var(--page);
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--muted); }
+    td:first-child { font-weight: 600; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+
+    .callout {
+      background: var(--accent-light); border: 1px solid #c7d2fe;
+      border-radius: var(--radius); padding: 12px 14px;
+      font-size: 13px; color: var(--accent); line-height: 1.6;
+    }
+    .callout strong { font-weight: 700; }
+
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    a { color: var(--accent); }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="/">
+    <div class="nav-mark">A</div>
+    <span class="nav-title">Ad Tracker</span>
+  </a>
+  <span class="nav-sep">/</span>
+  <span class="nav-page">Setup Guide</span>
+</nav>
+
+<div class="layout">
+
+  <!-- TOC -->
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#install">Installation</a>
+    <a href="#meta">Meta Ads API</a>
+    <a class="sub" href="#meta-app">1. Create App</a>
+    <a class="sub" href="#meta-token">2. Access Token</a>
+    <a class="sub" href="#meta-account">3. Account ID</a>
+    <a href="#google">Google Ads API</a>
+    <a class="sub" href="#google-token">1. Developer Token</a>
+    <a class="sub" href="#google-oauth">2. OAuth Setup</a>
+    <a class="sub" href="#google-refresh">3. Refresh Token</a>
+    <a href="#troubleshoot">Troubleshooting</a>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- Install -->
+    <div class="section" id="install">
+      <div class="section-head">
+        <div class="section-num">0</div>
+        <h2>Installation</h2>
+      </div>
+      <div class="section-body">
+        <div class="step-block">
+          <h3>Install dependencies &amp; start the server</h3>
+          <pre><code>cd ad-tracker-web
+npm install
+node server.js</code></pre>
+        </div>
+        <p>Then open <a href="/">http://localhost:3000</a> and click <strong>Settings</strong> to enter your credentials.</p>
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="section" id="meta">
+      <div class="section-head">
+        <div class="section-num">1</div>
+        <h2>Meta (Facebook) Ads API</h2>
+      </div>
+      <div class="section-body">
+
+        <div class="badge-row">
+          <span class="badge">App ID</span>
+          <span class="badge">App Secret</span>
+          <span class="badge">Long-lived Access Token</span>
+          <span class="badge">Ad Account ID</span>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Step 1 -->
+        <div class="step-block" id="meta-app">
+          <h3>Step 1 — Create a Meta App</h3>
+          <ol>
+            <li>Go to <a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps</a></li>
+            <li>Click <strong>Create App</strong> → choose <strong>Other</strong> → <strong>Business</strong></li>
+            <li>Give it any name (e.g. "Ad Tracker")</li>
+            <li>From the app dashboard, click <strong>Add Product</strong> → add <strong>Marketing API</strong></li>
+            <li>Your <strong>App ID</strong> and <strong>App Secret</strong> are in <strong>Settings → Basic</strong></li>
+          </ol>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Step 2 -->
+        <div class="step-block" id="meta-token">
+          <h3>Step 2 — Generate a Long-lived Access Token</h3>
+          <ol>
+            <li>Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer</a></li>
+            <li>Select your app from the dropdown</li>
+            <li>Click <strong>Generate Access Token</strong> — grant <code>ads_read</code> and <code>read_insights</code></li>
+            <li>Exchange the short-lived token for a long-lived one (valid ~60 days):</li>
+          </ol>
+          <pre><code>curl "https://graph.facebook.com/oauth/access_token\
+?grant_type=fb_exchange_token\
+&client_id=YOUR_APP_ID\
+&client_secret=YOUR_APP_SECRET\
+&fb_exchange_token=SHORT_LIVED_TOKEN"</code></pre>
+          <p>The <code>access_token</code> in the response is your long-lived token. Paste it into Settings.</p>
+          <div class="callout">
+            <strong>Token expiry:</strong> Long-lived tokens last ~60 days. You'll need to regenerate one when it expires. You can automate this with a system user token — see Meta docs for details.
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Step 3 -->
+        <div class="step-block" id="meta-account">
+          <h3>Step 3 — Find your Ad Account ID</h3>
+          <ol>
+            <li>Go to <a href="https://business.facebook.com/" target="_blank">business.facebook.com</a></li>
+            <li>Navigate to <strong>Business Settings → Accounts → Ad Accounts</strong></li>
+            <li>Your Ad Account ID looks like <code>act_1234567890</code> — enter only the numbers (no <code>act_</code>)</li>
+          </ol>
+        </div>
+
+        <hr class="divider" />
+
+        <table>
+          <tr><th>Settings field</th><th>Where to find it</th></tr>
+          <tr><td>App ID</td><td>App dashboard → Settings → Basic</td></tr>
+          <tr><td>App Secret</td><td>App dashboard → Settings → Basic (click Show)</td></tr>
+          <tr><td>Access Token</td><td>Generated in Step 2 above</td></tr>
+          <tr><td>Ad Account ID</td><td>Business Manager → numbers only, no "act_"</td></tr>
+        </table>
+
+      </div>
+    </div>
+
+    <!-- Google -->
+    <div class="section" id="google">
+      <div class="section-head">
+        <div class="section-num">2</div>
+        <h2>Google Ads API</h2>
+      </div>
+      <div class="section-body">
+
+        <div class="badge-row">
+          <span class="badge">Developer Token</span>
+          <span class="badge">Client ID</span>
+          <span class="badge">Client Secret</span>
+          <span class="badge">Refresh Token</span>
+          <span class="badge">Customer ID</span>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Step 1 -->
+        <div class="step-block" id="google-token">
+          <h3>Step 1 — Apply for a Developer Token</h3>
+          <ol>
+            <li>Sign in at <a href="https://ads.google.com/" target="_blank">ads.google.com</a></li>
+            <li>Go to <strong>Tools &amp; Settings → API Center</strong></li>
+            <li>Fill out the form and submit — a <strong>Basic Access</strong> (test) token is sufficient to get started</li>
+            <li>The token appears in the API Center once approved</li>
+          </ol>
+          <div class="callout">
+            <strong>Test vs Standard access:</strong> Basic Access works fine for reading your own account data. Standard Access is only needed if you're building a product for other advertisers.
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Step 2 -->
+        <div class="step-block" id="google-oauth">
+          <h3>Step 2 — Create OAuth 2.0 Credentials</h3>
+          <ol>
+            <li>Go to <a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a></li>
+            <li>Create a new project (or select an existing one)</li>
+            <li>Navigate to <strong>APIs &amp; Services → Library</strong> → enable <strong>Google Ads API</strong></li>
+            <li>Go to <strong>APIs &amp; Services → Credentials → Create Credentials → OAuth Client ID</strong></li>
+            <li>Choose <strong>Desktop App</strong> and give it a name</li>
+            <li>Download the JSON file — it contains your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+          </ol>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Step 3 -->
+        <div class="step-block" id="google-refresh">
+          <h3>Step 3 — Generate a Refresh Token</h3>
+          <p>Run this one-time script to get a refresh token via the OAuth flow:</p>
+          <pre><code>npm install -g google-auth-library
+node -e "
+const { OAuth2Client } = require('google-auth-library');
+const http = require('http');
+const url = require('url');
+const open = require('open');
+
+const CLIENT_ID = 'YOUR_CLIENT_ID';
+const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
+
+const client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, 'http://localhost:4000');
+const authUrl = client.generateAuthUrl({
+  access_type: 'offline',
+  scope: ['https://www.googleapis.com/auth/adwords'],
+});
+
+console.log('Opening browser...');
+const server = http.createServer(async (req, res) => {
+  const code = new url.URL(req.url, 'http://localhost:4000').searchParams.get('code');
+  if (code) {
+    const { tokens } = await client.getToken(code);
+    console.log('\\nRefresh token:', tokens.refresh_token);
+    res.end('Done! Check your terminal.');
+    server.close();
+  }
+});
+server.listen(4000, () => require('child_process').exec('open \"' + authUrl + '\"'));
+"</code></pre>
+          <p>Or use the simpler Python approach if you have Python available:</p>
+          <pre><code>pip3 install google-auth-oauthlib
+python3 -c "
+from google_auth_oauthlib.flow import InstalledAppFlow
+flow = InstalledAppFlow.from_client_secrets_file(
+    'client_secrets.json',
+    scopes=['https://www.googleapis.com/auth/adwords']
+)
+creds = flow.run_local_server()
+print('Refresh token:', creds.refresh_token)
+"</code></pre>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="step-block">
+          <h3>Step 4 — Find your Customer ID</h3>
+          <ol>
+            <li>Sign in at <a href="https://ads.google.com/" target="_blank">ads.google.com</a></li>
+            <li>Your Customer ID is the 10-digit number in the top right — e.g. <code>123-456-7890</code></li>
+            <li>Enter it with or without dashes — both work</li>
+          </ol>
+        </div>
+
+        <hr class="divider" />
+
+        <table>
+          <tr><th>Settings field</th><th>Where to find it</th></tr>
+          <tr><td>Developer Token</td><td>Google Ads → Tools → API Center</td></tr>
+          <tr><td>Client ID</td><td>Google Cloud Console → Credentials</td></tr>
+          <tr><td>Client Secret</td><td>Google Cloud Console → Credentials</td></tr>
+          <tr><td>Refresh Token</td><td>Generated via OAuth flow in Step 3</td></tr>
+          <tr><td>Customer ID</td><td>Top-right of Google Ads UI</td></tr>
+        </table>
+
+      </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="section" id="troubleshoot">
+      <div class="section-head">
+        <div class="section-num">3</div>
+        <h2>Troubleshooting</h2>
+      </div>
+      <div class="section-body">
+        <table>
+          <tr><th>Error</th><th>Fix</th></tr>
+          <tr><td>Invalid OAuth access token (Meta)</td><td>Your token expired (60-day limit). Regenerate via Graph API Explorer.</td></tr>
+          <tr><td>Request had invalid authentication credentials (Google)</td><td>Refresh token was revoked. Re-run the OAuth flow in Step 3.</td></tr>
+          <tr><td>No data showing</td><td>Your account may have no activity in the selected date range. Try "Last 30d".</td></tr>
+          <tr><td>Developer token not approved</td><td>Basic Access is enough for your own account. Check Google Ads API Center status.</td></tr>
+          <tr><td>ROAS shows N/A</td><td>Conversion value tracking needs to be set up in your ad account (e.g. purchase value pixel events).</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

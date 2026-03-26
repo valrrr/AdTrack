@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ad Spend Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top nav -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-mark">A</div>
+        <span class="logo-text">Ad Tracker</span>
+      </div>
+      <div class="platform-status">
+        <span class="status-badge" id="badge-meta">Meta</span>
+        <span class="status-badge" id="badge-google">Google</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-nav" id="btn-refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+      <button class="btn-nav" id="btn-settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="tab-group" id="platform-tabs">
+      <button class="tab active" data-platform="meta">Meta Ads</button>
+      <button class="tab" data-platform="google">Google Ads</button>
+      <button class="tab" data-platform="combined">Combined</button>
+    </div>
+    <div class="tab-group" id="date-tabs">
+      <button class="tab" data-range="today">Today</button>
+      <button class="tab" data-range="yesterday">Yesterday</button>
+      <button class="tab active" data-range="last_7d">Last 7d</button>
+      <button class="tab" data-range="last_30d">Last 30d</button>
+      <button class="tab" data-range="this_month">This Month</button>
+      <button class="tab" data-range="last_month">Last Month</button>
+    </div>
+  </div>
+
+  <!-- Page content -->
+  <div class="page" id="page">
+
+    <!-- KPI bar skeleton (replaced on load) -->
+    <div class="skeleton-bar" id="kpi-container"></div>
+
+    <!-- Metrics section -->
+    <div class="section-header">
+      <span class="section-title">All Metrics</span>
+    </div>
+
+    <!-- Cards skeleton -->
+    <div class="skeleton-grid" id="cards-container">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-bar">
+    <span id="last-updated"></span>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>API Settings</h2>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h3 class="settings-section-title">
+            <span class="section-dot" id="dot-meta"></span>
+            Meta (Facebook) Ads
+            <a class="info-tick" href="/setup#meta" target="_blank" title="How to get Meta credentials">
+              <span>i</span>
+              <span class="info-tick-tooltip">View Meta setup guide</span>
+            </a>
+          </h3>
+          <div class="field-group">
+            <label>App ID</label>
+            <input type="text" id="meta-app-id" placeholder="Your Meta App ID" />
+          </div>
+          <div class="field-group">
+            <label>App Secret</label>
+            <input type="password" id="meta-app-secret" placeholder="Your Meta App Secret" />
+          </div>
+          <div class="field-group">
+            <label>Long-lived Access Token</label>
+            <input type="password" id="meta-access-token" placeholder="Long-lived access token" />
+          </div>
+          <div class="field-group">
+            <label>Ad Account ID <span class="hint">(without "act_")</span></label>
+            <input type="text" id="meta-account-id" placeholder="e.g. 1234567890" />
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3 class="settings-section-title">
+            <span class="section-dot" id="dot-google"></span>
+            Google Ads
+            <a class="info-tick" href="/setup#google" target="_blank" title="How to get Google Ads credentials">
+              <span>i</span>
+              <span class="info-tick-tooltip">View Google Ads setup guide</span>
+            </a>
+          </h3>
+          <div class="field-group">
+            <label>Developer Token</label>
+            <input type="text" id="google-dev-token" placeholder="Google Ads Developer Token" />
+          </div>
+          <div class="field-group">
+            <label>OAuth Client ID</label>
+            <input type="text" id="google-client-id" placeholder="OAuth 2.0 Client ID" />
+          </div>
+          <div class="field-group">
+            <label>OAuth Client Secret</label>
+            <input type="password" id="google-client-secret" placeholder="OAuth 2.0 Client Secret" />
+          </div>
+          <div class="field-group">
+            <label>Refresh Token</label>
+            <input type="password" id="google-refresh-token" placeholder="OAuth Refresh Token" />
+          </div>
+          <div class="field-group">
+            <label>Customer ID</label>
+            <input type="text" id="google-customer-id" placeholder="e.g. 123-456-7890" />
+          </div>
+        </div>
+        <div class="settings-note">
+          Credentials are stored locally at <code>~/.ad-tracker/config.json</code>.
+          See <code>SETUP.md</code> for step-by-step setup instructions.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-settings">Cancel</button>
+        <button class="btn-primary" id="btn-save-settings">Save &amp; Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
