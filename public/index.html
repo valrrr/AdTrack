@@ -15,6 +15,26 @@
         <div class="logo-mark">A</div>
         <span class="logo-text">Ad Tracker</span>
       </div>
+
+      <!-- Account switcher -->
+      <div class="account-switcher" id="account-switcher">
+        <button class="account-btn" id="account-btn">
+          <div class="account-avatar" id="account-avatar">?</div>
+          <span class="account-name" id="account-name">Loading…</span>
+          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="account-dropdown hidden" id="account-dropdown">
+          <div class="account-dropdown-header">Ad Accounts</div>
+          <div class="account-list" id="account-list"></div>
+          <div class="account-dropdown-footer">
+            <button class="add-account-btn" id="add-account-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Account
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="platform-status">
         <span class="status-badge" id="badge-meta">Meta</span>
         <span class="status-badge" id="badge-google">Google</span>
@@ -24,6 +44,10 @@
       <button class="btn-nav" id="btn-refresh">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         Refresh
+      </button>
+      <button class="btn-nav btn-nav-ai" id="btn-ai">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        AI Insights
       </button>
       <button class="btn-nav" id="btn-settings">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -51,16 +75,23 @@
 
   <!-- Page content -->
   <div class="page" id="page">
-
-    <!-- KPI bar skeleton (replaced on load) -->
     <div class="skeleton-bar" id="kpi-container"></div>
 
-    <!-- Metrics section -->
+    <!-- AI Insights panel -->
+    <div class="ai-panel hidden" id="ai-panel">
+      <div class="ai-panel-header">
+        <div class="ai-panel-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          AI Insights
+        </div>
+        <div class="ai-panel-actions" id="ai-panel-actions"></div>
+      </div>
+      <div class="ai-panel-body" id="ai-panel-body"></div>
+    </div>
+
     <div class="section-header">
       <span class="section-title">All Metrics</span>
     </div>
-
-    <!-- Cards skeleton -->
     <div class="skeleton-grid" id="cards-container">
       <div class="skeleton-card"></div>
       <div class="skeleton-card"></div>
@@ -69,27 +100,30 @@
       <div class="skeleton-card"></div>
       <div class="skeleton-card"></div>
     </div>
-
   </div>
 
-  <!-- Footer -->
-  <div class="footer-bar">
-    <span id="last-updated"></span>
-  </div>
+  <div class="footer-bar"><span id="last-updated"></span></div>
 
-  <!-- Settings Modal -->
+  <!-- Settings / Account modal -->
   <div class="modal-overlay hidden" id="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h2>API Settings</h2>
+        <h2 id="modal-title">Account Settings</h2>
         <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div class="modal-body">
+
+        <!-- Account name -->
+        <div class="field-group" style="margin-bottom:20px;">
+          <label style="font-size:13px;font-weight:600;color:var(--text);">Account Name</label>
+          <input type="text" id="account-name-input" placeholder="e.g. My Store, Brand X" />
+        </div>
+
         <div class="settings-section">
           <h3 class="settings-section-title">
             <span class="section-dot" id="dot-meta"></span>
             Meta (Facebook) Ads
-            <a class="info-tick" href="/setup#meta" target="_blank" title="How to get Meta credentials">
+            <a class="info-tick" href="/setup#meta" target="_blank">
               <span>i</span>
               <span class="info-tick-tooltip">View Meta setup guide</span>
             </a>
@@ -111,11 +145,12 @@
             <input type="text" id="meta-account-id" placeholder="e.g. 1234567890" />
           </div>
         </div>
+
         <div class="settings-section">
           <h3 class="settings-section-title">
             <span class="section-dot" id="dot-google"></span>
             Google Ads
-            <a class="info-tick" href="/setup#google" target="_blank" title="How to get Google Ads credentials">
+            <a class="info-tick" href="/setup#google" target="_blank">
               <span>i</span>
               <span class="info-tick-tooltip">View Google Ads setup guide</span>
             </a>
@@ -141,21 +176,61 @@
             <input type="text" id="google-customer-id" placeholder="e.g. 123-456-7890" />
           </div>
         </div>
+
         <div class="settings-note">
           Credentials are stored locally at <code>~/.ad-tracker/config.json</code>.
-          See <code>SETUP.md</code> for step-by-step setup instructions.
         </div>
       </div>
       <div class="modal-footer">
+        <button class="btn-danger hidden" id="btn-delete-account">Delete Account</button>
+        <div style="flex:1"></div>
         <button class="btn-secondary" id="btn-cancel-settings">Cancel</button>
-        <button class="btn-primary" id="btn-save-settings">Save &amp; Refresh</button>
+        <button class="btn-primary" id="btn-save-settings">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div class="toast hidden" id="toast"></div>
+  <!-- Niche / AI setup modal -->
+  <div class="modal-overlay hidden" id="niche-modal-overlay">
+    <div class="modal" style="width:460px">
+      <div class="modal-header">
+        <h2>AI Insights Setup</h2>
+        <button class="modal-close" id="niche-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">
+          Tell us about your business so AI can give you niche-specific analysis and campaign recommendations.
+        </p>
+        <div class="field-group">
+          <label>Industry / Niche <span style="color:var(--red)">*</span></label>
+          <input type="text" id="niche-input" placeholder="e.g. E-commerce fashion, SaaS B2B, Local restaurant…" />
+        </div>
+        <div class="field-group">
+          <label>Primary Objective <span style="color:var(--red)">*</span></label>
+          <select id="objective-input" class="field-select">
+            <option value="Sales &amp; Conversions">Sales &amp; Conversions</option>
+            <option value="Lead Generation">Lead Generation</option>
+            <option value="Brand Awareness">Brand Awareness</option>
+            <option value="App Installs">App Installs</option>
+            <option value="Website Traffic">Website Traffic</option>
+            <option value="Video Views">Video Views</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Average Order Value <span class="hint">(optional — helps with ROAS context)</span></label>
+          <input type="number" id="aov-input" placeholder="e.g. 75" min="1" style="width:160px" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div style="flex:1"></div>
+        <button class="btn-secondary" id="btn-cancel-niche">Cancel</button>
+        <button class="btn-primary" id="btn-save-niche">Save</button>
+      </div>
+    </div>
+  </div>
 
+  <div class="toast hidden" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
