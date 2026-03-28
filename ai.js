@@ -32,41 +32,43 @@ async function* analyzeMetrics({ metrics, niche, objective, aov, platform, dateR
   const platformLabel = PLATFORM_LABELS[platform] ?? platform;
   const dateLabel     = DATE_LABELS[dateRange]    ?? dateRange;
 
-  const prompt = `You are an expert digital marketing analyst and media buyer. Analyze these ad metrics and provide specific, actionable insights.
+  // Extra context for appointment-based businesses
+  const appointmentNote = objective === 'Book Appointments'
+    ? '\nNote: For this business, a "conversion" means an appointment booked. Focus CPA analysis on cost-per-booking and optimise for high-intent local audiences.'
+    : '';
 
-**Business Context:**
-- Industry/Niche: ${niche}
-- Primary Objective: ${objective}${aov ? `\n- Average Order Value: $${aov}` : ''}
-- Platform: ${platformLabel}
-- Period: ${dateLabel}
+  const prompt = `You are an expert digital marketing analyst. Analyze these ad metrics and give direct, specific insights — no fluff.
 
-**Current Metrics:**
+**Business:** ${niche}
+**Goal:** ${objective}${aov ? ` | Avg order value: $${aov}` : ''}${appointmentNote}
+**Platform:** ${platformLabel}
+**Period:** ${dateLabel}
+
+**Metrics:**
 ${metricLines}
 
-Provide a structured analysis with these sections:
+Respond with exactly these sections:
 
 ## Performance Summary
-2-3 sentences assessing overall performance for a ${niche} business focused on ${objective}.
+2–3 sentences. Is this account performing well for a ${niche} business trying to ${objective}? Be blunt.
 
 ## What's Working
-Specific metrics that are strong for this niche, with a brief explanation of why each matters.
+List 1–3 specific metrics that are strong. Explain why each matters for this niche.
 
-## Areas to Improve
-The 2-3 most impactful metrics to fix, with realistic targets to aim for.
+## What Needs Fixing
+List the 2–3 biggest problems. Give realistic target numbers to aim for.
 
-## Recommendations
-5 concrete, actionable recommendations. Be specific — reference actual ad strategies, audience segments, creative approaches, or budget tactics relevant to ${niche}. No generic advice.
+## Action Plan
+Give exactly 5 numbered recommendations. Each must be specific to ${niche} — name ad formats, audience types, copy angles, or budget moves. No generic tips.
 
 ## Campaign Ideas
-2-3 specific campaign types or formats that typically perform well for ${niche} businesses with a ${objective} objective.
+Suggest 2–3 campaign types that work well for ${niche} businesses focused on ${objective}. Include the format, targeting approach, and why it fits.`;
 
-Be direct, specific, and practical.`;
-
+  // No thinking — stream text tokens immediately
   const stream = client.messages.stream({
-    model: 'claude-opus-4-6',
-    max_tokens: 2048,
-    thinking: { type: 'adaptive' },
-    messages: [{ role: 'user', content: prompt }],
+    model:      'claude-opus-4-6',
+    max_tokens: 1500,
+    messages:   [{ role: 'user', content: prompt }],
   });
 
   for await (const event of stream) {

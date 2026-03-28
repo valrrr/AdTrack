@@ -22,7 +22,6 @@ const state = {
   analyzing: false,
   lastMetrics: null,
   lastAnalysis: '',
-  aiPanelOpen: false,
 };
 
 /* ------------------------------------------------------------------ */
@@ -144,8 +143,7 @@ function updateStatusBadges() {
 async function switchAccount(id) {
   await fetch(`/api/accounts/${id}/activate`, { method: 'POST' });
   closeAccountDropdown();
-  // Reset per-account AI state
-  state.lastMetrics = null;
+  state.lastMetrics  = null;
   state.lastAnalysis = '';
   await Promise.all([loadAccounts(), loadNiche()]);
   loadMetrics();
@@ -415,7 +413,7 @@ async function saveSettings() {
 /* AI Insights                                                          */
 /* ------------------------------------------------------------------ */
 async function loadNiche() {
-  const res = await fetch('/api/niche');
+  const res  = await fetch('/api/niche');
   const data = await res.json();
   state.niche     = data.niche;
   state.objective = data.objective;
@@ -428,46 +426,45 @@ function renderAIPanel() {
   const actions = document.getElementById('ai-panel-actions');
   const body    = document.getElementById('ai-panel-body');
   if (!panel || !actions || !body) return;
+  if (state.analyzing) return; // never interrupt a live stream
 
-  // Keep panel visible once we've interacted with it
-  if (!state.aiPanelOpen) return;
-
-  if (state.analyzing) return; // don't interrupt ongoing stream
-
-  panel.classList.remove('hidden');
-
+  // No niche configured yet — teaser state
   if (!state.niche) {
-    actions.innerHTML = `<button class="btn-ai-configure" id="btn-configure-niche">Set up niche</button>`;
+    actions.innerHTML = `<button class="btn-ai-configure" id="btn-configure-niche">Set up</button>`;
     body.innerHTML = `
       <div class="ai-teaser">
-        <div class="ai-teaser-icon">✨</div>
+        <div class="ai-teaser-icon">✦</div>
         <div class="ai-teaser-text">
-          <strong>Get AI-powered insights for your niche</strong>
-          <p>Tell us about your business so AI can explain whether your metrics are good for your industry, highlight what to improve, and suggest campaigns tailored to your niche.</p>
+          <strong>Personalized insights for your niche</strong>
+          <p>Tell us your industry and goal — AI will score your metrics, flag what to fix, and suggest campaigns tailored to your business.</p>
         </div>
       </div>`;
-    document.getElementById('btn-configure-niche')?.addEventListener('click', openNicheModal);
+    document.getElementById('btn-configure-niche').addEventListener('click', openNicheModal);
     return;
   }
 
-  // Niche is set — render header actions
+  // Niche configured — render header
   const canAnalyze = !!state.lastMetrics;
   actions.innerHTML = `
-    <div class="ai-niche-tag">${esc(state.niche)} · ${esc(state.objective || 'Conversions')}</div>
-    <button class="btn-ai-edit" id="btn-edit-niche">Edit</button>
-    <button class="btn-analyze" id="btn-analyze-now" ${canAnalyze ? '' : 'disabled'}>
+    <div class="ai-niche-tag">
+      <span class="ai-niche-name">${esc(state.niche)}</span>
+      <span class="ai-niche-sep">·</span>
+      <span class="ai-niche-obj">${esc(state.objective || 'Conversions')}</span>
+    </div>
+    <button class="btn-ai-edit" id="btn-edit-niche" title="Edit niche settings">Edit</button>
+    <button class="btn-analyze${canAnalyze ? '' : ' btn-analyze-dim'}" id="btn-analyze-now" ${canAnalyze ? '' : 'disabled'} title="${canAnalyze ? 'Run AI analysis on current metrics' : 'Load metrics first'}">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       Analyze
     </button>`;
 
-  document.getElementById('btn-edit-niche')?.addEventListener('click', openNicheModal);
-  document.getElementById('btn-analyze-now')?.addEventListener('click', analyzeWithAI);
+  document.getElementById('btn-edit-niche').addEventListener('click', openNicheModal);
+  document.getElementById('btn-analyze-now').addEventListener('click', analyzeWithAI);
 
-  // Only update body if no existing analysis is displayed
+  // Only set body content if there's nothing meaningful already there
   if (!state.lastAnalysis && !body.querySelector('.ai-result, .ai-stream-area')) {
     body.innerHTML = canAnalyze
-      ? `<div class="ai-ready-prompt">Click <strong>Analyze</strong> to get personalized insights for your ${esc(state.niche)} business.</div>`
-      : `<div class="ai-ready-prompt">Load metrics first, then click <strong>Analyze</strong> to get niche-specific insights.</div>`;
+      ? `<div class="ai-ready-prompt">Click <strong>Analyze</strong> to get insights tailored to <strong>${esc(state.niche)}</strong>.</div>`
+      : `<div class="ai-ready-prompt">Load metrics above, then click <strong>Analyze</strong>.</div>`;
   }
 }
 
@@ -476,6 +473,7 @@ function openNicheModal() {
   document.getElementById('objective-input').value = state.objective ?? 'Sales & Conversions';
   document.getElementById('aov-input').value       = state.aov       ?? '';
   document.getElementById('niche-modal-overlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('niche-input').focus(), 50);
 }
 
 function closeNicheModal() {
@@ -500,17 +498,20 @@ async function saveNiche() {
     body: JSON.stringify({ niche, objective, aov }),
   });
 
+  const nicheChanged = niche !== state.niche || objective !== state.objective;
   state.niche     = niche;
   state.objective = objective;
   state.aov       = aov;
-  // Reset prior analysis when niche changes
-  state.lastAnalysis = '';
-  document.getElementById('ai-panel-body').innerHTML = '';
+
+  if (nicheChanged) {
+    state.lastAnalysis = '';
+    document.getElementById('ai-panel-body').innerHTML = '';
+  }
 
   closeNicheModal();
   renderAIPanel();
 
-  // Auto-analyze if metrics are already loaded
+  // Auto-run analysis now that we have context
   if (state.lastMetrics) analyzeWithAI();
 }
 
@@ -523,22 +524,30 @@ async function analyzeWithAI() {
   const body    = document.getElementById('ai-panel-body');
   const actions = document.getElementById('ai-panel-actions');
 
-  // Analyzing state in header
+  // Spinner in header
   actions.innerHTML = `
-    <div class="ai-niche-tag">${esc(state.niche)} · ${esc(state.objective || 'Conversions')}</div>
+    <div class="ai-niche-tag">
+      <span class="ai-niche-name">${esc(state.niche)}</span>
+      <span class="ai-niche-sep">·</span>
+      <span class="ai-niche-obj">${esc(state.objective || 'Conversions')}</span>
+    </div>
     <button class="btn-analyze analyzing" disabled>
       <svg class="spin-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
       Analyzing…
     </button>`;
 
-  body.innerHTML = `<div class="ai-stream-area" id="ai-stream-area"><div class="ai-stream-text"><span class="ai-cursor"></span></div></div>`;
+  // Stream container
+  body.innerHTML = `<div class="ai-stream-area" id="ai-stream-area"></div>`;
   const streamArea = document.getElementById('ai-stream-area');
+
+  // Scroll panel into view so user sees it working
+  document.getElementById('ai-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
     const response = await fetch('/api/analyze', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body:    JSON.stringify({
         metrics:   state.lastMetrics,
         platform:  state.platform,
         dateRange: state.dateRange,
@@ -553,8 +562,9 @@ async function analyzeWithAI() {
     const reader  = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let streaming = true;
 
-    while (true) {
+    while (streaming) {
       const { done, value } = await reader.read();
       if (done) break;
 
@@ -565,49 +575,52 @@ async function analyzeWithAI() {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const payload = line.slice(6).trim();
-        if (payload === '[DONE]') break;
-        try {
-          const { text, error } = JSON.parse(payload);
-          if (error) throw new Error(error);
-          if (text) {
-            state.lastAnalysis += text;
-            streamArea.innerHTML = `<div class="ai-stream-text">${esc(state.lastAnalysis)}<span class="ai-cursor"></span></div>`;
-            streamArea.scrollTop = streamArea.scrollHeight;
-          }
-        } catch (e) { /* partial JSON line — skip */ }
+        if (payload === '[DONE]') { streaming = false; break; }
+
+        let parsed;
+        try { parsed = JSON.parse(payload); }
+        catch { continue; } // incomplete line — wait for more chunks
+
+        if (parsed.error) throw new Error(parsed.error);
+        if (parsed.text) {
+          state.lastAnalysis += parsed.text;
+          // Show streaming text as raw markdown — switches to rendered when done
+          streamArea.innerHTML =
+            `<pre class="ai-stream-text">${esc(state.lastAnalysis)}<span class="ai-cursor"></span></pre>`;
+          streamArea.scrollTop = streamArea.scrollHeight;
+        }
       }
     }
 
-    // Render final markdown
-    if (window.marked && state.lastAnalysis) {
+    // Render finished markdown
+    if (state.lastAnalysis) {
       const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       body.innerHTML = `
-        <div class="ai-result">${window.marked.parse(state.lastAnalysis)}</div>
+        <div class="ai-result">${window.marked ? window.marked.parse(state.lastAnalysis) : `<pre>${esc(state.lastAnalysis)}</pre>`}</div>
         <div class="ai-result-footer">
-          <button class="btn-reanalyze" id="btn-reanalyze">Re-analyze</button>
-          <span class="ai-result-ts">Generated at ${ts}</span>
+          <button class="btn-reanalyze" id="btn-reanalyze">↻ Re-analyze</button>
+          <span class="ai-result-ts">Generated ${ts} · ${state.platform} · ${state.dateRange.replace(/_/g,' ')}</span>
         </div>`;
-      document.getElementById('btn-reanalyze')?.addEventListener('click', () => {
+      document.getElementById('btn-reanalyze').addEventListener('click', () => {
         state.lastAnalysis = '';
         analyzeWithAI();
       });
     }
+
   } catch (err) {
-    body.innerHTML = `<div class="ai-error">Analysis failed: ${esc(err.message)}</div>`;
+    body.innerHTML = `
+      <div class="ai-error">
+        <strong>Analysis failed</strong><br>${esc(err.message)}
+        <br><br><button class="btn-reanalyze" id="btn-retry">Retry</button>
+      </div>`;
+    document.getElementById('btn-retry')?.addEventListener('click', () => {
+      state.lastAnalysis = '';
+      analyzeWithAI();
+    });
     state.lastAnalysis = '';
   } finally {
     state.analyzing = false;
-    // Restore header actions
-    const canAnalyze = !!state.lastMetrics;
-    actions.innerHTML = `
-      <div class="ai-niche-tag">${esc(state.niche)} · ${esc(state.objective || 'Conversions')}</div>
-      <button class="btn-ai-edit" id="btn-edit-niche">Edit</button>
-      <button class="btn-analyze" id="btn-analyze-now" ${canAnalyze ? '' : 'disabled'}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        Analyze
-      </button>`;
-    document.getElementById('btn-edit-niche')?.addEventListener('click', openNicheModal);
-    document.getElementById('btn-analyze-now')?.addEventListener('click', analyzeWithAI);
+    renderAIPanel(); // restore header (Analyze button back)
   }
 }
 
@@ -617,10 +630,7 @@ async function analyzeWithAI() {
 function setupEventListeners() {
   document.getElementById('btn-refresh').addEventListener('click', loadMetrics);
   document.getElementById('btn-ai').addEventListener('click', () => {
-    state.aiPanelOpen = true;
-    renderAIPanel();
     document.getElementById('ai-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    document.getElementById('btn-ai').classList.add('active');
   });
   document.getElementById('btn-settings').addEventListener('click', () => openSettings(state.activeAccountId));
   document.getElementById('account-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleAccountDropdown(); });

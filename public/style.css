@@ -912,18 +912,22 @@ body {
 }
 
 .ai-niche-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-muted);
   background: var(--page);
   border: 1px solid var(--border-2);
   padding: 3px 10px;
   border-radius: 20px;
-  max-width: 260px;
+  max-width: 300px;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
+.ai-niche-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+.ai-niche-sep  { color: var(--border-2); flex-shrink: 0; }
+.ai-niche-obj  { color: var(--accent); flex-shrink: 0; }
 
 .btn-ai-configure,
 .btn-ai-edit {
@@ -952,10 +956,12 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, background 0.15s;
+  flex-shrink: 0;
 }
 .btn-analyze:hover:not(:disabled) { opacity: 0.88; }
-.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-analyze.btn-analyze-dim { background: var(--border-2); color: var(--text-muted); cursor: not-allowed; }
+.btn-analyze:disabled { cursor: not-allowed; }
 .btn-analyze.analyzing { background: var(--text-muted); }
 .btn-analyze .spin-icon { animation: spin 0.8s linear infinite; }
 
@@ -966,13 +972,16 @@ body {
 /* Teaser (no niche set) */
 .ai-teaser {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0;
 }
 .ai-teaser-icon {
   font-size: 28px;
   flex-shrink: 0;
   line-height: 1;
+  color: var(--accent);
+  font-style: normal;
 }
 .ai-teaser-text strong {
   display: block;
@@ -997,8 +1006,11 @@ body {
 
 /* Stream area */
 .ai-stream-area {
-  max-height: 480px;
+  max-height: 420px;
   overflow-y: auto;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 .ai-stream-text {
   font-size: 13px;
@@ -1006,6 +1018,9 @@ body {
   line-height: 1.7;
   white-space: pre-wrap;
   font-family: inherit;
+  margin: 0;
+  padding: 16px;
+  word-break: break-word;
 }
 .ai-cursor {
   display: inline-block;
