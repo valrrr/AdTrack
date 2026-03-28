@@ -801,6 +801,22 @@ body {
   border-radius: var(--radius-sm);
 }
 
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  user-select: none;
+}
+.remember-me input[type="checkbox"] {
+  width: 15px; height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .login-alert {
   margin: 0 24px;
   padding: 10px 14px;

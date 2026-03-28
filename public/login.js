@@ -43,9 +43,10 @@ function setLoading(btn, loading, text) {
 /* ------------------------------------------------------------------ */
 formSignin.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email    = document.getElementById('si-email').value.trim();
-  const password = document.getElementById('si-password').value;
-  const btn      = document.getElementById('btn-signin');
+  const email      = document.getElementById('si-email').value.trim();
+  const password   = document.getElementById('si-password').value;
+  const rememberMe = document.getElementById('si-remember').checked;
+  const btn        = document.getElementById('btn-signin');
 
   if (!email || !password) return showAlert('Please enter your email and password.');
 
@@ -56,7 +57,7 @@ formSignin.addEventListener('submit', async (e) => {
     const res  = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     });
     const data = await res.json();
     if (!data.ok) return showAlert(data.error);

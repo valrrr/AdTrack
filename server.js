@@ -20,7 +20,7 @@ app.use(session({
   secret:            getSessionSecret(),
   resave:            false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+  cookie: {},          // maxAge set per-request based on rememberMe
 }));
 
 // Static files (served publicly so login page can use CSS/JS)
@@ -75,13 +75,16 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
   if (!email || !password)
     return res.status(400).json({ ok: false, error: 'Email and password are required' });
   try {
     const user = await login({ email, password });
     req.session.userId = user.id;
     req.session.user   = { id: user.id, name: user.name, email: user.email };
+    // Remember me: persist cookie indefinitely (100 years); otherwise session cookie
+    if (rememberMe) req.session.cookie.maxAge = 100 * 365 * 24 * 60 * 60 * 1000;
+    else            req.session.cookie.expires = false;
     res.json({ ok: true, user: req.session.user });
   } catch (err) {
     res.status(401).json({ ok: false, error: err.message });
