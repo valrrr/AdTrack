@@ -3,10 +3,10 @@ const axios = require('axios');
 const GRAPH_API = 'https://graph.facebook.com/v19.0';
 
 const DATE_PRESETS = {
-  today: 'today',
-  yesterday: 'yesterday',
-  last_7d: 'last_7_d',
-  last_30d: 'last_30_d',
+  today:      'today',
+  yesterday:  'yesterday',
+  last_7d:    'last_7d',
+  last_30d:   'last_30d',
   this_month: 'this_month',
   last_month: 'last_month',
 };
@@ -27,7 +27,7 @@ class MetaProvider {
     const { data } = await axios.get(`${GRAPH_API}/act_${ad_account_id}/insights`, {
       params: {
         fields,
-        date_preset: DATE_PRESETS[dateRange] ?? 'last_7_d',
+        date_preset: DATE_PRESETS[dateRange] ?? 'last_7d',
         level: 'account',
         access_token,
       },

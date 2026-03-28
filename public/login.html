@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ad Tracker — Sign In</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="login-body">
+
+  <div class="login-wrap">
+
+    <!-- Branding -->
+    <div class="login-brand">
+      <div class="logo-mark" style="width:36px;height:36px;font-size:18px;border-radius:10px;">A</div>
+      <span class="logo-text" style="color:var(--text);font-size:20px;">Ad Tracker</span>
+    </div>
+
+    <!-- Card -->
+    <div class="login-card">
+
+      <!-- Tab switcher -->
+      <div class="login-tabs">
+        <button class="login-tab active" id="tab-signin" type="button">Sign In</button>
+        <button class="login-tab" id="tab-signup" type="button">Create Account</button>
+      </div>
+
+      <!-- Alert -->
+      <div class="login-alert hidden" id="login-alert"></div>
+
+      <!-- Sign In -->
+      <form class="login-form" id="form-signin" novalidate>
+        <div class="field-group">
+          <label for="si-email">Email</label>
+          <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="field-group">
+          <label for="si-password">Password</label>
+          <input type="password" id="si-password" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn-primary btn-auth" id="btn-signin">Sign In</button>
+      </form>
+
+      <!-- Create Account -->
+      <form class="login-form hidden" id="form-signup" novalidate>
+        <div class="field-group">
+          <label for="su-name">Full Name</label>
+          <input type="text" id="su-name" placeholder="Jane Smith" autocomplete="name" required />
+        </div>
+        <div class="field-group">
+          <label for="su-email">Email</label>
+          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" required />
+          <div class="email-status" id="email-status"></div>
+        </div>
+        <div class="field-group">
+          <label for="su-password">Password <span class="hint">(min. 8 characters)</span></label>
+          <input type="password" id="su-password" placeholder="••••••••" autocomplete="new-password" required minlength="8" />
+        </div>
+        <div class="field-group">
+          <label for="su-confirm">Confirm Password</label>
+          <input type="password" id="su-confirm" placeholder="Repeat password" autocomplete="new-password" required />
+        </div>
+        <button type="submit" class="btn-primary btn-auth" id="btn-signup">Create Account</button>
+      </form>
+
+    </div>
+
+    <p class="login-footer">Credentials stored locally at <code>~/.ad-tracker/</code></p>
+
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

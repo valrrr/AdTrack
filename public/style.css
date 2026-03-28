@@ -89,6 +89,26 @@ body {
   background: rgba(110,231,183,0.08);
 }
 
+/* Clickable platform badge */
+.platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.platform-badge:hover {
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+.platform-badge.connected:hover {
+  color: #a7f3d0;
+  border-color: rgba(110,231,183,0.5);
+  background: rgba(110,231,183,0.15);
+}
+.platform-icon { flex-shrink: 0; }
+
 /* ------------------------------------------------------------------ */
 /* Account switcher                                                     */
 /* ------------------------------------------------------------------ */
@@ -704,6 +724,127 @@ body {
 .toast.hidden { opacity: 0; pointer-events: none; display: none; }
 .toast.success { background: var(--green); }
 .toast.error   { background: var(--red); }
+
+/* ------------------------------------------------------------------ */
+/* Login page                                                           */
+/* ------------------------------------------------------------------ */
+.login-body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--page);
+}
+
+.login-wrap {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.login-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.login-tab {
+  flex: 1;
+  padding: 13px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.login-tab:hover { color: var(--text); background: var(--surface-2); }
+.login-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--surface);
+}
+
+.login-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.login-form.hidden { display: none; }
+
+.btn-auth {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  margin-top: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.login-alert {
+  margin: 0 24px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 16px;
+}
+.login-alert.hidden { display: none; }
+.login-alert-error {
+  background: var(--red-light);
+  border: 1px solid var(--red-border);
+  color: var(--red);
+}
+.login-alert-success {
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+}
+
+.login-footer {
+  font-size: 12px;
+  color: var(--text-subtle);
+  text-align: center;
+}
+.login-footer code {
+  background: var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Email domain check indicator */
+.email-status {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+  min-height: 18px;
+}
+.email-checking { color: var(--text-subtle); }
+.email-valid    { color: var(--green); }
+.email-invalid  { color: var(--red); }
 
 /* ------------------------------------------------------------------ */
 /* AI button in nav                                                     */

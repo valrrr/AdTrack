@@ -117,8 +117,28 @@ function renderAccountSwitcher() {
 
 function updateStatusBadges() {
   const active = state.accounts.find(a => a.active);
-  document.getElementById('badge-meta').classList.toggle('connected', active?.meta ?? false);
-  document.getElementById('badge-google').classList.toggle('connected', active?.google ?? false);
+  const metaOk   = active?.meta   ?? false;
+  const googleOk = active?.google ?? false;
+
+  const badgeMeta   = document.getElementById('badge-meta');
+  const badgeGoogle = document.getElementById('badge-google');
+
+  badgeMeta.classList.toggle('connected', metaOk);
+  badgeGoogle.classList.toggle('connected', googleOk);
+
+  // Update click behaviour
+  badgeMeta.onclick = () => {
+    if (metaOk) window.open('https://adsmanager.facebook.com/', '_blank');
+    else openSettings(state.activeAccountId);
+  };
+  badgeGoogle.onclick = () => {
+    if (googleOk) window.open('https://ads.google.com/', '_blank');
+    else openSettings(state.activeAccountId);
+  };
+
+  // Tooltip titles
+  badgeMeta.title   = metaOk   ? 'Open Meta Ads Manager'  : 'Configure Meta Ads';
+  badgeGoogle.title = googleOk ? 'Open Google Ads'        : 'Configure Google Ads';
 }
 
 async function switchAccount(id) {

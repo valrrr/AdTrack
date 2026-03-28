@@ -1,6 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+const fs     = require('fs');
+const path   = require('path');
+const os     = require('os');
+const crypto = require('crypto');
 
 const CONFIG_DIR = path.join(os.homedir(), '.ad-tracker');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
@@ -67,8 +68,17 @@ function isGoogleConfigured(account) {
   return !!(g.developer_token && g.client_id && g.refresh_token && g.customer_id);
 }
 
+function getSessionSecret() {
+  const config = loadConfig();
+  if (!config.sessionSecret) {
+    config.sessionSecret = crypto.randomBytes(32).toString('hex');
+    saveConfig(config);
+  }
+  return config.sessionSecret;
+}
+
 module.exports = {
   loadConfig, saveConfig, getActiveAccount,
   isMetaConfigured, isGoogleConfigured,
-  emptyMeta, emptyGoogle,
+  emptyMeta, emptyGoogle, getSessionSecret,
 };
