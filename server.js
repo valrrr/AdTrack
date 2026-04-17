@@ -1,6 +1,6 @@
-const express = require('express');
-const session = require('express-session');
-const path    = require('path');
+const express       = require('express');
+const cookieSession = require('cookie-session');
+const path          = require('path');
 const {
   loadConfig, saveConfig, getActiveAccount,
   isMetaConfigured, isGoogleConfigured,
@@ -15,12 +15,13 @@ const { register, login, checkEmail, loadUsers } = require('./auth');
 const app = express();
 app.use(express.json());
 
-// Session
-app.use(session({
-  secret:            getSessionSecret(),
-  resave:            false,
-  saveUninitialized: false,
-  cookie: {},          // maxAge set per-request based on rememberMe
+// Session (cookie-session: stateless, survives serverless restarts)
+app.use(cookieSession({
+  name:   'adtracker.session',
+  secret: getSessionSecret(),
+  maxAge: 100 * 365 * 24 * 60 * 60 * 1000, // default: long-lived; overridden per-request
+  httpOnly: true,
+  sameSite: 'lax',
 }));
 
 // Static files (served publicly so login page can use CSS/JS)
@@ -82,9 +83,8 @@ app.post('/api/auth/login', async (req, res) => {
     const user = await login({ email, password });
     req.session.userId = user.id;
     req.session.user   = { id: user.id, name: user.name, email: user.email };
-    // Remember me: persist cookie indefinitely (100 years); otherwise session cookie
-    if (rememberMe) req.session.cookie.maxAge = 100 * 365 * 24 * 60 * 60 * 1000;
-    else            req.session.cookie.expires = false;
+    // Remember me: long-lived cookie vs session cookie
+    if (!rememberMe) req.sessionOptions.maxAge = undefined;
     res.json({ ok: true, user: req.session.user });
   } catch (err) {
     res.status(401).json({ ok: false, error: err.message });
@@ -92,7 +92,8 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
+  req.session = null;
+  res.json({ ok: true });
 });
 
 // -------------------------------------------------------------------------
@@ -355,8 +356,12 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 // -------------------------------------------------------------------------
-// Start
+// Start (local dev only — Vercel uses api/index.js export)
 // -------------------------------------------------------------------------
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Ad Tracker running at http://localhost:${PORT}`));
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Ad Tracker running at http://localhost:${PORT}`));
+}
+
+module.exports = app;

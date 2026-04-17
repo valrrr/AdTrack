@@ -4,7 +4,10 @@ const os   = require('os');
 const crypto = require('crypto');
 const dns  = require('dns').promises;
 
-const USERS_FILE = path.join(os.homedir(), '.ad-tracker', 'users.json');
+const USERS_FILE = path.join(
+  process.env.VERCEL ? '/tmp/.ad-tracker' : path.join(os.homedir(), '.ad-tracker'),
+  'users.json'
+);
 
 function loadUsers() {
   try {

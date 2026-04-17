@@ -3,7 +3,9 @@ const path   = require('path');
 const os     = require('os');
 const crypto = require('crypto');
 
-const CONFIG_DIR = path.join(os.homedir(), '.ad-tracker');
+const CONFIG_DIR = process.env.VERCEL
+  ? '/tmp/.ad-tracker'
+  : path.join(os.homedir(), '.ad-tracker');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 
 const emptyMeta = () => ({ app_id: '', app_secret: '', access_token: '', ad_account_id: '' });
@@ -69,6 +71,7 @@ function isGoogleConfigured(account) {
 }
 
 function getSessionSecret() {
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
   const config = loadConfig();
   if (!config.sessionSecret) {
     config.sessionSecret = crypto.randomBytes(32).toString('hex');
