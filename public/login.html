@@ -8,13 +8,30 @@
 </head>
 <body class="login-body">
 
-  <div class="login-wrap">
+  <div class="login-split">
 
-    <!-- Branding -->
-    <div class="login-brand">
-      <div class="logo-mark" style="width:36px;height:36px;font-size:18px;border-radius:10px;">A</div>
-      <span class="logo-text" style="color:var(--text);font-size:20px;">Ad Tracker</span>
+    <!-- Left: Hero -->
+    <div class="login-hero">
+      <div class="login-hero-inner">
+        <div class="login-brand" style="margin-bottom:28px;">
+          <div class="logo-mark" style="width:36px;height:36px;font-size:18px;border-radius:10px;">A</div>
+          <span class="logo-text" style="font-size:20px;">Ad Tracker</span>
+        </div>
+        <h1 class="hero-headline">Know exactly what's<br>driving your revenue.</h1>
+        <p class="hero-sub">Connect your Meta and Google Ads accounts and get a live view of the metrics that actually matter — spend, ROAS, CPA, and more — all in one place. No spreadsheets, no guessing.</p>
+        <div class="hero-chart-wrap">
+          <img src="/salesrwks.png" alt="Sales performance chart" class="hero-chart" />
+          <p class="hero-chart-caption">Real results from a real account — tracked with Ad Tracker.</p>
+        </div>
+      </div>
     </div>
+
+    <!-- Right: Login card -->
+    <div class="login-wrap">
+      <div class="login-brand login-brand-mobile">
+        <div class="logo-mark" style="width:36px;height:36px;font-size:18px;border-radius:10px;">A</div>
+        <span class="logo-text" style="color:var(--text);font-size:20px;">Ad Tracker</span>
+      </div>
 
     <!-- Card -->
     <div class="login-card">
@@ -69,9 +86,10 @@
 
     </div>
 
-    <p class="login-footer">Credentials stored locally at <code>~/.ad-tracker/</code></p>
+      <p class="login-footer">Credentials stored locally at <code>~/.ad-tracker/</code></p>
 
-  </div>
+    </div><!-- /login-wrap -->
+  </div><!-- /login-split -->
 
   <script src="login.js"></script>
 </body>
