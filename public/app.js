@@ -596,7 +596,7 @@ async function analyzeWithAI() {
     if (state.lastAnalysis) {
       const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       body.innerHTML = `
-        <div class="ai-result">${window.marked ? window.marked.parse(state.lastAnalysis) : `<pre>${esc(state.lastAnalysis)}</pre>`}</div>
+        <div class="ai-result">${window.marked ? window.DOMPurify.sanitize(window.marked.parse(state.lastAnalysis)) : `<pre>${esc(state.lastAnalysis)}</pre>`}</div>
         <div class="ai-result-footer">
           <button class="btn-reanalyze" id="btn-reanalyze">↻ Re-analyze</button>
           <span class="ai-result-ts">Generated ${ts} · ${state.platform} · ${state.dateRange.replace(/_/g,' ')}</span>

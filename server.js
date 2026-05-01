@@ -100,9 +100,6 @@ app.post('/api/auth/logout', (req, res) => {
 // Auth middleware — protects everything below
 // -------------------------------------------------------------------------
 const requireAuth = (req, res, next) => {
-  const users = loadUsers();
-  // If no users have been created yet, skip auth (backward compat)
-  if (Object.keys(users).length === 0) return next();
   if (req.session?.userId) return next();
   if (req.path.startsWith('/api/')) {
     return res.status(401).json({ ok: false, error: 'Unauthorized' });
@@ -130,13 +127,15 @@ app.get('/setup', (req, res) => {
 
 app.get('/api/accounts', (req, res) => {
   const config = loadConfig();
-  const accounts = Object.entries(config.accounts).map(([id, acc]) => ({
-    id,
-    name: acc.name,
-    active: id === config.activeAccount,
-    meta:   isMetaConfigured(acc),
-    google: isGoogleConfigured(acc),
-  }));
+  const accounts = Object.entries(config.accounts)
+    .filter(([, acc]) => !acc.ownerId || acc.ownerId === req.session.userId)
+    .map(([id, acc]) => ({
+      id,
+      name:   acc.name,
+      active: id === config.activeAccount,
+      meta:   isMetaConfigured(acc),
+      google: isGoogleConfigured(acc),
+    }));
   res.json({ accounts, activeId: config.activeAccount });
 });
 
@@ -144,9 +143,10 @@ app.post('/api/accounts', (req, res) => {
   const config = loadConfig();
   const id = `account_${Date.now()}`;
   config.accounts[id] = {
-    name:   (req.body.name || 'New Account').trim(),
-    meta:   req.body.meta   ?? emptyMeta(),
-    google: req.body.google ?? emptyGoogle(),
+    name:    (req.body.name || 'New Account').trim(),
+    meta:    req.body.meta   ?? emptyMeta(),
+    google:  req.body.google ?? emptyGoogle(),
+    ownerId: req.session.userId,
   };
   saveConfig(config);
   res.json({ ok: true, id });
@@ -156,6 +156,8 @@ app.put('/api/accounts/:id', (req, res) => {
   const config = loadConfig();
   const acc = config.accounts[req.params.id];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
+  if (acc.ownerId && acc.ownerId !== req.session.userId)
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
 
   const incoming = req.body;
   const mask = (inVal, existingVal) => (inVal === '••••••••' ? existingVal : inVal);
@@ -183,6 +185,10 @@ app.put('/api/accounts/:id', (req, res) => {
 
 app.delete('/api/accounts/:id', (req, res) => {
   const config = loadConfig();
+  const acc = config.accounts[req.params.id];
+  if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
+  if (acc.ownerId && acc.ownerId !== req.session.userId)
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
   if (Object.keys(config.accounts).length <= 1)
     return res.status(400).json({ ok: false, error: 'Cannot delete the last account' });
   delete config.accounts[req.params.id];
@@ -194,8 +200,10 @@ app.delete('/api/accounts/:id', (req, res) => {
 
 app.post('/api/accounts/:id/activate', (req, res) => {
   const config = loadConfig();
-  if (!config.accounts[req.params.id])
-    return res.status(404).json({ ok: false, error: 'Account not found' });
+  const acc = config.accounts[req.params.id];
+  if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
+  if (acc.ownerId && acc.ownerId !== req.session.userId)
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
   config.activeAccount = req.params.id;
   saveConfig(config);
   res.json({ ok: true });
@@ -205,6 +213,8 @@ app.get('/api/accounts/:id/config', (req, res) => {
   const config = loadConfig();
   const acc = config.accounts[req.params.id];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
+  if (acc.ownerId && acc.ownerId !== req.session.userId)
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
   res.json({
     id:   req.params.id,
     name: acc.name,

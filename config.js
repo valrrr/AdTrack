@@ -31,6 +31,12 @@ function loadConfig() {
 
   const raw = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
 
+  // Remove session secret if it was previously stored here (security fix)
+  if (raw.sessionSecret) {
+    delete raw.sessionSecret;
+    saveConfig(raw);
+  }
+
   // Migrate old single-account format
   if (!raw.accounts) {
     const id = `account_${Date.now()}`;
@@ -70,14 +76,15 @@ function isGoogleConfigured(account) {
   return !!(g.developer_token && g.client_id && g.refresh_token && g.customer_id);
 }
 
+let _devSecret;
 function getSessionSecret() {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  const config = loadConfig();
-  if (!config.sessionSecret) {
-    config.sessionSecret = crypto.randomBytes(32).toString('hex');
-    saveConfig(config);
+  if (process.env.VERCEL) {
+    throw new Error('SESSION_SECRET environment variable must be set');
   }
-  return config.sessionSecret;
+  // Local dev only: ephemeral secret (sessions won't survive server restart)
+  if (!_devSecret) _devSecret = crypto.randomBytes(32).toString('hex');
+  return _devSecret;
 }
 
 module.exports = {
