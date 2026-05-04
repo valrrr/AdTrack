@@ -12,12 +12,18 @@ const USERS_FILE = path.join(
 const KV_KEY = 'adtracker:users';
 
 function getKV() {
-  if (!process.env.KV_REST_API_URL) return null;
-  try { return require('@vercel/kv').kv; } catch { return null; }
+  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  try {
+    const { Redis } = require('@upstash/redis');
+    return new Redis({
+      url:   process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  } catch { return null; }
 }
 
 async function loadUsers() {
-  // 1. Vercel KV — persistent, multi-user
+  // 1. Upstash Redis — persistent, multi-user
   const kv = getKV();
   if (kv) {
     try { return (await kv.get(KV_KEY)) || {}; } catch { return {}; }

@@ -69,8 +69,8 @@ app.post('/api/auth/register', async (req, res) => {
     req.session.userId = user.id;
     req.session.user   = { id: user.id, name: user.name, email: user.email };
     const resp = { ok: true, user: req.session.user };
-    // On Vercel without KV or env-var auth, surface values for one-time manual setup
-    if (process.env.VERCEL && !process.env.KV_REST_API_URL && !process.env.ADMIN_EMAIL) {
+    // On Vercel without Redis or env-var auth, surface values for one-time manual setup
+    if (process.env.VERCEL && !process.env.UPSTASH_REDIS_REST_URL && !process.env.ADMIN_EMAIL) {
       resp.vercelSetup = {
         ADMIN_EMAIL: user.email,
         ADMIN_NAME:  user.name,
