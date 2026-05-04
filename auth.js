@@ -9,8 +9,20 @@ const USERS_FILE = path.join(
   'users.json'
 );
 
-function loadUsers() {
-  // Env-var mode: persists across Vercel serverless cold starts
+const KV_KEY = 'adtracker:users';
+
+function getKV() {
+  if (!process.env.KV_REST_API_URL) return null;
+  try { return require('@vercel/kv').kv; } catch { return null; }
+}
+
+async function loadUsers() {
+  // 1. Vercel KV — persistent, multi-user
+  const kv = getKV();
+  if (kv) {
+    try { return (await kv.get(KV_KEY)) || {}; } catch { return {}; }
+  }
+  // 2. Env-var fallback — single admin user (backward compat)
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD_HASH) {
     const email = process.env.ADMIN_EMAIL.toLowerCase().trim();
     return {
@@ -22,13 +34,19 @@ function loadUsers() {
       }
     };
   }
+  // 3. Local file — dev
   try {
     if (!fs.existsSync(USERS_FILE)) return {};
     return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
   } catch { return {}; }
 }
 
-function saveUsers(users) {
+async function saveUsers(users) {
+  const kv = getKV();
+  if (kv) {
+    await kv.set(KV_KEY, users);
+    return;
+  }
   const dir = path.dirname(USERS_FILE);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
@@ -68,7 +86,7 @@ async function checkEmail(email) {
 }
 
 async function register({ name, email, password }) {
-  const users = loadUsers();
+  const users = await loadUsers();
   const key   = email.toLowerCase().trim();
 
   if (users[key]) throw new Error('An account with this email already exists');
@@ -86,12 +104,12 @@ async function register({ name, email, password }) {
     passwordHash,
     createdAt: new Date().toISOString(),
   };
-  saveUsers(users);
+  await saveUsers(users);
   return { id, name: name.trim(), email: key, passwordHash };
 }
 
 async function login({ email, password }) {
-  const users = loadUsers();
+  const users = await loadUsers();
   const key   = email.toLowerCase().trim();
   const user  = users[key];
   if (!user) throw new Error('Invalid email or password');

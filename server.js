@@ -36,8 +36,8 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('/api/auth/status', (req, res) => {
-  const users = loadUsers();
+app.get('/api/auth/status', async (req, res) => {
+  const users = await loadUsers();
   res.json({
     hasUsers:     Object.keys(users).length > 0,
     loggedIn:     !!req.session?.userId,
@@ -49,9 +49,8 @@ app.get('/api/auth/check-email', async (req, res) => {
   const { email } = req.query;
   if (!email) return res.json({ valid: false, reason: 'No email provided' });
   const result = await checkEmail(email.toLowerCase().trim());
-  // Also check if already registered
   if (result.valid) {
-    const users = loadUsers();
+    const users = await loadUsers();
     if (users[email.toLowerCase().trim()]) {
       return res.json({ valid: false, reason: 'Email already registered' });
     }
@@ -70,8 +69,8 @@ app.post('/api/auth/register', async (req, res) => {
     req.session.userId = user.id;
     req.session.user   = { id: user.id, name: user.name, email: user.email };
     const resp = { ok: true, user: req.session.user };
-    // On Vercel without env-var auth, include setup values so the user can persist their account
-    if (process.env.VERCEL && !process.env.ADMIN_EMAIL) {
+    // On Vercel without KV or env-var auth, surface values for one-time manual setup
+    if (process.env.VERCEL && !process.env.KV_REST_API_URL && !process.env.ADMIN_EMAIL) {
       resp.vercelSetup = {
         ADMIN_EMAIL: user.email,
         ADMIN_NAME:  user.name,
