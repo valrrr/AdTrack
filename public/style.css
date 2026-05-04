@@ -861,6 +861,70 @@ body {
   .login-brand-mobile { display: flex; }
 }
 
+/* ------------------------------------------------------------------ */
+/* Dashboard mobile                                                     */
+/* ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  /* Header */
+  .header { padding: 0 12px; height: 52px; }
+  .header-left { gap: 10px; }
+  .platform-status { display: none; }
+  .btn-nav span, .btn-nav-ai span { display: none; }
+  .btn-nav { padding: 6px 8px; }
+  .logo-text { font-size: 13px; }
+
+  /* Account switcher */
+  .account-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Controls: stack platform tabs above date tabs, both scrollable */
+  .controls {
+    height: auto;
+    padding: 6px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .tab-group {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    flex-shrink: 0;
+  }
+  .tab-group::-webkit-scrollbar { display: none; }
+  .tab { padding: 5px 10px; font-size: 12px; white-space: nowrap; }
+
+  /* Page */
+  .page { padding: 12px; gap: 12px; }
+
+  /* KPI bar: 2 columns grid on mobile */
+  .kpi-bar {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .kpi-item {
+    flex: 1 1 calc(50% - 1px);
+    min-width: 0;
+    padding: 14px 14px;
+  }
+  .kpi-item + .kpi-item::before { display: none; }
+  .kpi-value { font-size: 20px; }
+  .kpi-label { font-size: 10px; }
+
+  /* Metrics grid: single column */
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .metric-card { padding: 14px; }
+
+  /* AI panel */
+  .ai-panel-body { max-height: 260px; }
+
+  /* Modal full screen */
+  .modal { max-width: 95vw; margin: 0 12px; }
+}
+
 .login-brand {
   display: flex;
   align-items: center;

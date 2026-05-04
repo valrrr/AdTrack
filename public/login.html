@@ -316,15 +316,45 @@
     @media (max-width: 800px) {
       .v2-split { grid-template-columns: 1fr; }
       .v2-hero { padding: 48px 24px 32px; }
-      .v2-auth-panel {
-        padding: 0 24px 48px;
-        border-left: none;
-        border-top: 1px solid rgba(255,255,255,0.06);
-      }
       .v2-nav { padding: 0 24px; }
       .v2-nav-links { display: none; }
       .v2-stats { gap: 24px; }
       .v2-chart-wrap { max-width: 100%; }
+
+      /* Hide inline auth panel; show as modal instead */
+      .v2-auth-panel { display: none; }
+
+      /* Mobile modal overlay */
+      .v2-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(6px);
+        z-index: 200;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .v2-modal-overlay.open { display: flex; }
+      .v2-modal-sheet {
+        width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        background: #13131a;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 20px 40px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+      }
+      .v2-modal-handle {
+        width: 36px; height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        margin: 0 auto 20px;
+      }
+    }
+
+    @media (min-width: 801px) {
+      .v2-modal-overlay { display: none !important; }
     }
   </style>
 </head>
@@ -341,8 +371,56 @@
       <li><a href="/">dashboard</a></li>
       <li><a href="/setup.html">setup</a></li>
     </ul>
-    <button class="v2-btn-pink" onclick="document.getElementById('tab-signin').focus()">sign in</button>
+    <button class="v2-btn-pink" id="nav-signin-btn">sign in</button>
   </nav>
+
+  <!-- Mobile auth modal (hidden on desktop) -->
+  <div class="v2-modal-overlay" id="auth-modal">
+    <div class="v2-modal-sheet">
+      <div class="v2-modal-handle"></div>
+      <div class="v2-card-title" style="margin-bottom:4px;">Welcome back</div>
+      <div class="v2-card-subtitle" style="margin-bottom:20px;">Sign in to your dashboard</div>
+      <div class="v2-tabs">
+        <button class="login-tab active" id="tab-signin-m" type="button">Sign In</button>
+        <button class="login-tab" id="tab-signup-m" type="button">Create Account</button>
+      </div>
+      <div class="login-alert hidden" id="login-alert-m"></div>
+      <form class="login-form" id="form-signin-m" novalidate>
+        <div class="field-group">
+          <label for="si-email-m">Email</label>
+          <input type="email" id="si-email-m" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="field-group">
+          <label for="si-password-m">Password</label>
+          <input type="password" id="si-password-m" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <label class="remember-me">
+          <input type="checkbox" id="si-remember-m" checked />
+          <span>Remember me</span>
+        </label>
+        <button type="submit" class="btn-auth" id="btn-signin-m">Sign In</button>
+      </form>
+      <form class="login-form hidden" id="form-signup-m" novalidate>
+        <div class="field-group">
+          <label for="su-name-m">Full Name</label>
+          <input type="text" id="su-name-m" placeholder="Jane Smith" autocomplete="name" required />
+        </div>
+        <div class="field-group">
+          <label for="su-email-m">Email</label>
+          <input type="email" id="su-email-m" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="field-group">
+          <label for="su-password-m">Password <span class="hint">(min. 8 characters)</span></label>
+          <input type="password" id="su-password-m" placeholder="••••••••" autocomplete="new-password" required minlength="8" />
+        </div>
+        <div class="field-group">
+          <label for="su-confirm-m">Confirm Password</label>
+          <input type="password" id="su-confirm-m" placeholder="Repeat password" autocomplete="new-password" required />
+        </div>
+        <button type="submit" class="btn-auth" id="btn-signup-m">Create Account</button>
+      </form>
+    </div>
+  </div>
 
   <!-- Split -->
   <div class="v2-split">
