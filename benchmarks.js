@@ -45,34 +45,38 @@ function formatValue(key, value) {
   return Math.round(value).toLocaleString('en-US');
 }
 
-function combineMetrics(meta, google) {
-  if (!meta && !google) return null;
-  const v = (d, k) => (d?.[k] ?? 0);
-  const spend = v(meta, 'spend') + v(google, 'spend');
-  const impressions = v(meta, 'impressions') + v(google, 'impressions');
-  const clicks = v(meta, 'clicks') + v(google, 'clicks');
-  const conversions = v(meta, 'conversions') + v(google, 'conversions');
+function combineMetrics(...datasets) {
+  const providers = datasets.filter(Boolean);
+  if (providers.length === 0) return null;
 
+  const v = (d, k) => (d?.[k] ?? 0);
+  const spend       = providers.reduce((s, d) => s + v(d, 'spend'), 0);
+  const impressions = providers.reduce((s, d) => s + v(d, 'impressions'), 0);
+  const clicks      = providers.reduce((s, d) => s + v(d, 'clicks'), 0);
+  const conversions = providers.reduce((s, d) => s + v(d, 'conversions'), 0);
+
+  // Weighted ROAS across providers that have it
   let roas = null;
-  const ms = v(meta, 'spend'), gs = v(google, 'spend');
-  const mr = meta?.roas, gr = google?.roas;
-  if (mr && gr && (ms + gs) > 0) roas = (mr * ms + gr * gs) / (ms + gs);
-  else if (mr) roas = mr;
-  else if (gr) roas = gr;
+  const withRoas = providers.filter(d => d?.roas != null);
+  if (withRoas.length > 0) {
+    const roasSpend = withRoas.reduce((s, d) => s + v(d, 'spend'), 0);
+    if (roasSpend > 0) roas = withRoas.reduce((s, d) => s + d.roas * v(d, 'spend'), 0) / roasSpend;
+    else roas = withRoas[0].roas;
+  }
 
   return {
     spend,
     impressions,
-    reach: meta?.reach ?? null,
+    reach:           datasets[0]?.reach     ?? null,
     clicks,
-    ctr: impressions > 0 ? (clicks / impressions * 100) : 0,
-    cpc: clicks > 0 ? spend / clicks : null,
-    cpm: impressions > 0 ? (spend / impressions * 1000) : null,
+    ctr:             impressions > 0 ? (clicks / impressions * 100) : 0,
+    cpc:             clicks > 0 ? spend / clicks : null,
+    cpm:             impressions > 0 ? (spend / impressions * 1000) : null,
     conversions,
     conversion_rate: clicks > 0 ? (conversions / clicks * 100) : 0,
-    cpa: conversions > 0 ? spend / conversions : null,
+    cpa:             conversions > 0 ? spend / conversions : null,
     roas,
-    frequency: meta?.frequency ?? null,
+    frequency:       datasets[0]?.frequency ?? null,
   };
 }
 

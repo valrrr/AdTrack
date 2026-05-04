@@ -7,7 +7,7 @@ const KPI_KEYS = ['spend', 'roas', 'conversions', 'conversion_rate', 'cpa', 'ctr
 /* State                                                                */
 /* ------------------------------------------------------------------ */
 const state = {
-  platform: 'meta',
+  enabledPlatforms: ['meta'],
   dateRange: 'last_7d',
   loading: false,
   metaInfo: null,
@@ -63,7 +63,7 @@ function renderAccountSwitcher() {
   list.innerHTML = '';
 
   for (const acc of state.accounts) {
-    const platforms = [acc.meta && 'Meta', acc.google && 'Google'].filter(Boolean).join(' · ') || 'No platforms configured';
+    const platforms = [acc.meta && 'Meta', acc.google && 'Google', acc.tiktok && 'TikTok', acc.pinterest && 'Pinterest'].filter(Boolean).join(' · ') || 'No platforms configured';
 
     const row = document.createElement('div');
     row.className = 'account-row' + (acc.active ? ' active-row' : '');
@@ -116,28 +116,36 @@ function renderAccountSwitcher() {
 
 function updateStatusBadges() {
   const active = state.accounts.find(a => a.active);
-  const metaOk   = active?.meta   ?? false;
-  const googleOk = active?.google ?? false;
-
-  const badgeMeta   = document.getElementById('badge-meta');
-  const badgeGoogle = document.getElementById('badge-google');
-
-  badgeMeta.classList.toggle('connected', metaOk);
-  badgeGoogle.classList.toggle('connected', googleOk);
-
-  // Update click behaviour
-  badgeMeta.onclick = () => {
-    if (metaOk) window.open('https://adsmanager.facebook.com/', '_blank');
-    else openSettings(state.activeAccountId);
-  };
-  badgeGoogle.onclick = () => {
-    if (googleOk) window.open('https://ads.google.com/', '_blank');
-    else openSettings(state.activeAccountId);
+  const ok = {
+    meta:      active?.meta      ?? false,
+    google:    active?.google    ?? false,
+    tiktok:    active?.tiktok    ?? false,
+    pinterest: active?.pinterest ?? false,
   };
 
-  // Tooltip titles
-  badgeMeta.title   = metaOk   ? 'Open Meta Ads Manager'  : 'Configure Meta Ads';
-  badgeGoogle.title = googleOk ? 'Open Google Ads'        : 'Configure Google Ads';
+  const badges = {
+    meta:      document.getElementById('badge-meta'),
+    google:    document.getElementById('badge-google'),
+    tiktok:    document.getElementById('badge-tiktok'),
+    pinterest: document.getElementById('badge-pinterest'),
+  };
+
+  const urls = {
+    meta:      'https://adsmanager.facebook.com/',
+    google:    'https://ads.google.com/',
+    tiktok:    'https://ads.tiktok.com/',
+    pinterest: 'https://ads.pinterest.com/',
+  };
+
+  for (const [p, badge] of Object.entries(badges)) {
+    if (!badge) continue;
+    badge.classList.toggle('connected', ok[p]);
+    badge.onclick = () => {
+      if (ok[p]) window.open(urls[p], '_blank');
+      else openSettings(state.activeAccountId);
+    };
+    badge.title = ok[p] ? `Open ${p.charAt(0).toUpperCase() + p.slice(1)} Ads` : `Configure ${p.charAt(0).toUpperCase() + p.slice(1)} Ads`;
+  }
 }
 
 async function switchAccount(id) {
@@ -186,7 +194,11 @@ async function loadMetrics() {
   showSkeletons();
 
   try {
-    const res = await fetch(`/api/metrics?platform=${state.platform}&dateRange=${state.dateRange}`);
+    const ep = state.enabledPlatforms;
+    const platformParam = ep.length === 1
+      ? `platform=${ep[0]}`
+      : `platforms=${ep.join(',')}`;
+    const res = await fetch(`/api/metrics?${platformParam}&dateRange=${state.dateRange}`);
     const json = await res.json();
     if (!json.ok) {
       showError(json.error);
@@ -351,8 +363,15 @@ async function openSettings(accountId) {
     document.getElementById('google-refresh-token').value = cfg.google.refresh_token ?? '';
     document.getElementById('google-customer-id').value   = cfg.google.customer_id ?? '';
 
+    document.getElementById('tiktok-access-token').value   = cfg.tiktok?.access_token  ?? '';
+    document.getElementById('tiktok-advertiser-id').value  = cfg.tiktok?.advertiser_id ?? '';
+    document.getElementById('pinterest-access-token').value  = cfg.pinterest?.access_token  ?? '';
+    document.getElementById('pinterest-ad-account-id').value = cfg.pinterest?.ad_account_id ?? '';
+
     document.getElementById('dot-meta').classList.toggle('connected', acc?.meta ?? false);
     document.getElementById('dot-google').classList.toggle('connected', acc?.google ?? false);
+    document.getElementById('dot-tiktok').classList.toggle('connected', acc?.tiktok ?? false);
+    document.getElementById('dot-pinterest').classList.toggle('connected', acc?.pinterest ?? false);
   }
 
   document.getElementById('modal-overlay').classList.remove('hidden');
@@ -360,7 +379,9 @@ async function openSettings(accountId) {
 
 function clearCredentialFields() {
   ['meta-app-id','meta-app-secret','meta-access-token','meta-account-id',
-   'google-dev-token','google-client-id','google-client-secret','google-refresh-token','google-customer-id']
+   'google-dev-token','google-client-id','google-client-secret','google-refresh-token','google-customer-id',
+   'tiktok-access-token','tiktok-advertiser-id',
+   'pinterest-access-token','pinterest-ad-account-id']
     .forEach(id => { document.getElementById(id).value = ''; });
 }
 
@@ -383,6 +404,14 @@ async function saveSettings() {
       client_secret:   document.getElementById('google-client-secret').value.trim(),
       refresh_token:   document.getElementById('google-refresh-token').value.trim(),
       customer_id:     document.getElementById('google-customer-id').value.trim(),
+    },
+    tiktok: {
+      access_token:  document.getElementById('tiktok-access-token').value.trim(),
+      advertiser_id: document.getElementById('tiktok-advertiser-id').value.trim(),
+    },
+    pinterest: {
+      access_token:  document.getElementById('pinterest-access-token').value.trim(),
+      ad_account_id: document.getElementById('pinterest-ad-account-id').value.trim(),
     },
   };
 
@@ -549,7 +578,7 @@ async function analyzeWithAI() {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         metrics:   state.lastMetrics,
-        platform:  state.platform,
+        platform:  state.enabledPlatforms.length === 1 ? state.enabledPlatforms[0] : 'combined',
         dateRange: state.dateRange,
       }),
     });
@@ -599,7 +628,7 @@ async function analyzeWithAI() {
         <div class="ai-result">${window.marked ? window.DOMPurify.sanitize(window.marked.parse(state.lastAnalysis)) : `<pre>${esc(state.lastAnalysis)}</pre>`}</div>
         <div class="ai-result-footer">
           <button class="btn-reanalyze" id="btn-reanalyze">↻ Re-analyze</button>
-          <span class="ai-result-ts">Generated ${ts} · ${state.platform} · ${state.dateRange.replace(/_/g,' ')}</span>
+          <span class="ai-result-ts">Generated ${ts} · ${state.enabledPlatforms.join('+') } · ${state.dateRange.replace(/_/g,' ')}</span>
         </div>`;
       document.getElementById('btn-reanalyze').addEventListener('click', () => {
         state.lastAnalysis = '';
@@ -663,11 +692,18 @@ function setupEventListeners() {
     if (e.key === 'Escape') { closeSettings(); closeAccountDropdown(); closeNicheModal(); }
   });
 
-  document.getElementById('platform-tabs').querySelectorAll('.tab').forEach(btn => {
+  document.getElementById('platform-toggles').querySelectorAll('.ptoggle').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('platform-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      state.platform = btn.dataset.platform;
+      const p = btn.dataset.platform;
+      const idx = state.enabledPlatforms.indexOf(p);
+      if (idx === -1) {
+        state.enabledPlatforms.push(p);
+        btn.classList.add('enabled');
+      } else {
+        if (state.enabledPlatforms.length === 1) return; // keep at least one
+        state.enabledPlatforms.splice(idx, 1);
+        btn.classList.remove('enabled');
+      }
       loadMetrics();
     });
   });

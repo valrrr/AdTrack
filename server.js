@@ -3,12 +3,14 @@ const cookieSession = require('cookie-session');
 const path          = require('path');
 const {
   loadConfig, saveConfig, getActiveAccount,
-  isMetaConfigured, isGoogleConfigured,
-  emptyMeta, emptyGoogle, getSessionSecret,
+  isMetaConfigured, isGoogleConfigured, isTiktokConfigured, isPinterestConfigured,
+  emptyMeta, emptyGoogle, emptyTiktok, emptyPinterest, getSessionSecret,
 } = require('./config');
 const { combineMetrics, METRICS, METRIC_ORDER } = require('./benchmarks');
-const MetaProvider   = require('./providers/meta');
-const GoogleProvider = require('./providers/google');
+const MetaProvider      = require('./providers/meta');
+const GoogleProvider    = require('./providers/google');
+const TiktokProvider    = require('./providers/tiktok');
+const PinterestProvider = require('./providers/pinterest');
 const { analyzeMetrics } = require('./ai');
 const { register, login, checkEmail, loadUsers } = require('./auth');
 
@@ -130,10 +132,12 @@ app.get('/api/accounts', (req, res) => {
     .filter(([, acc]) => !acc.ownerId || acc.ownerId === req.session.userId)
     .map(([id, acc]) => ({
       id,
-      name:   acc.name,
-      active: id === config.activeAccount,
-      meta:   isMetaConfigured(acc),
-      google: isGoogleConfigured(acc),
+      name:      acc.name,
+      active:    id === config.activeAccount,
+      meta:      isMetaConfigured(acc),
+      google:    isGoogleConfigured(acc),
+      tiktok:    isTiktokConfigured(acc),
+      pinterest: isPinterestConfigured(acc),
     }));
   res.json({ accounts, activeId: config.activeAccount });
 });
@@ -142,10 +146,12 @@ app.post('/api/accounts', (req, res) => {
   const config = loadConfig();
   const id = `account_${Date.now()}`;
   config.accounts[id] = {
-    name:    (req.body.name || 'New Account').trim(),
-    meta:    req.body.meta   ?? emptyMeta(),
-    google:  req.body.google ?? emptyGoogle(),
-    ownerId: req.session.userId,
+    name:      (req.body.name || 'New Account').trim(),
+    meta:      req.body.meta      ?? emptyMeta(),
+    google:    req.body.google    ?? emptyGoogle(),
+    tiktok:    req.body.tiktok    ?? emptyTiktok(),
+    pinterest: req.body.pinterest ?? emptyPinterest(),
+    ownerId:   req.session.userId,
   };
   saveConfig(config);
   res.json({ ok: true, id });
@@ -164,18 +170,27 @@ app.put('/api/accounts/:id', (req, res) => {
   config.accounts[req.params.id] = {
     name: (incoming.name || acc.name).trim(),
     meta: {
-      app_id:        incoming.meta.app_id        ?? acc.meta.app_id,
-      app_secret:    mask(incoming.meta.app_secret,   acc.meta.app_secret),
-      access_token:  mask(incoming.meta.access_token, acc.meta.access_token),
-      ad_account_id: incoming.meta.ad_account_id ?? acc.meta.ad_account_id,
+      app_id:        incoming.meta?.app_id        ?? acc.meta?.app_id,
+      app_secret:    mask(incoming.meta?.app_secret,   acc.meta?.app_secret),
+      access_token:  mask(incoming.meta?.access_token, acc.meta?.access_token),
+      ad_account_id: incoming.meta?.ad_account_id ?? acc.meta?.ad_account_id,
     },
     google: {
-      developer_token: incoming.google.developer_token ?? acc.google.developer_token,
-      client_id:       incoming.google.client_id       ?? acc.google.client_id,
-      client_secret:   mask(incoming.google.client_secret, acc.google.client_secret),
-      refresh_token:   mask(incoming.google.refresh_token, acc.google.refresh_token),
-      customer_id:     incoming.google.customer_id     ?? acc.google.customer_id,
+      developer_token: incoming.google?.developer_token ?? acc.google?.developer_token,
+      client_id:       incoming.google?.client_id       ?? acc.google?.client_id,
+      client_secret:   mask(incoming.google?.client_secret, acc.google?.client_secret),
+      refresh_token:   mask(incoming.google?.refresh_token, acc.google?.refresh_token),
+      customer_id:     incoming.google?.customer_id     ?? acc.google?.customer_id,
     },
+    tiktok: {
+      access_token:  mask(incoming.tiktok?.access_token,  acc.tiktok?.access_token),
+      advertiser_id: incoming.tiktok?.advertiser_id ?? acc.tiktok?.advertiser_id,
+    },
+    pinterest: {
+      access_token: mask(incoming.pinterest?.access_token, acc.pinterest?.access_token),
+      ad_account_id: incoming.pinterest?.ad_account_id ?? acc.pinterest?.ad_account_id,
+    },
+    ...(acc.ownerId ? { ownerId: acc.ownerId } : {}),
   };
 
   saveConfig(config);
@@ -227,6 +242,14 @@ app.get('/api/accounts/:id/config', (req, res) => {
       client_secret: acc.google?.client_secret ? '••••••••' : '',
       refresh_token: acc.google?.refresh_token  ? '••••••••' : '',
     },
+    tiktok: {
+      ...acc.tiktok,
+      access_token: acc.tiktok?.access_token ? '••••••••' : '',
+    },
+    pinterest: {
+      ...acc.pinterest,
+      access_token: acc.pinterest?.access_token ? '••••••••' : '',
+    },
   });
 });
 
@@ -251,13 +274,26 @@ app.get('/api/config', (req, res) => {
       client_secret: acc.google?.client_secret ? '••••••••' : '',
       refresh_token: acc.google?.refresh_token  ? '••••••••' : '',
     },
+    tiktok: {
+      ...acc.tiktok,
+      access_token: acc.tiktok?.access_token ? '••••••••' : '',
+    },
+    pinterest: {
+      ...acc.pinterest,
+      access_token: acc.pinterest?.access_token ? '••••••••' : '',
+    },
   });
 });
 
 app.get('/api/config/status', (req, res) => {
   const config = loadConfig();
   const acc = getActiveAccount(config);
-  res.json({ meta: isMetaConfigured(acc), google: isGoogleConfigured(acc) });
+  res.json({
+    meta:      isMetaConfigured(acc),
+    google:    isGoogleConfigured(acc),
+    tiktok:    isTiktokConfigured(acc),
+    pinterest: isPinterestConfigured(acc),
+  });
 });
 
 // -------------------------------------------------------------------------
@@ -268,31 +304,55 @@ app.get('/api/metrics', async (req, res) => {
   const { platform = 'meta', dateRange = 'last_7d' } = req.query;
   const config = loadConfig();
   const acc    = getActiveAccount(config);
-  const providerConfig = { meta: acc.meta, google: acc.google };
+  const pc     = { meta: acc.meta, google: acc.google, tiktok: acc.tiktok, pinterest: acc.pinterest };
+
+  const providerFor = (p) => {
+    switch (p) {
+      case 'meta':      return isMetaConfigured(acc)      ? new MetaProvider(pc).getInsights(dateRange)      : Promise.resolve(null);
+      case 'google':    return isGoogleConfigured(acc)    ? new GoogleProvider(pc).getInsights(dateRange)    : Promise.resolve(null);
+      case 'tiktok':    return isTiktokConfigured(acc)    ? new TiktokProvider(pc).getInsights(dateRange)    : Promise.resolve(null);
+      case 'pinterest': return isPinterestConfigured(acc) ? new PinterestProvider(pc).getInsights(dateRange) : Promise.resolve(null);
+      default: return Promise.resolve(null);
+    }
+  };
 
   try {
     let data = null;
 
+    // Multi-platform request: ?platforms=meta,tiktok
+    if (req.query.platforms) {
+      const list = req.query.platforms.split(',').map(p => p.trim()).filter(Boolean);
+      const results = await Promise.allSettled(list.map(providerFor));
+      const datasets = results.map(r => r.status === 'fulfilled' ? r.value : null);
+      const warnings = results.map((r, i) => r.status === 'rejected' ? `${list[i]}: ${r.reason?.message}` : null).filter(Boolean);
+      data = combineMetrics(...datasets);
+      if (!data) return res.json({ ok: false, error: warnings.join(' | ') || 'No platforms configured' });
+      return res.json({ ok: true, data, warnings: warnings.length ? warnings : undefined });
+    }
+
+    // Single-platform request
     if (platform === 'meta') {
       if (!isMetaConfigured(acc)) return res.json({ ok: false, error: 'Meta not configured for this account' });
-      data = await new MetaProvider(providerConfig).getInsights(dateRange);
+      data = await new MetaProvider(pc).getInsights(dateRange);
 
     } else if (platform === 'google') {
       if (!isGoogleConfigured(acc)) return res.json({ ok: false, error: 'Google not configured for this account' });
-      data = await new GoogleProvider(providerConfig).getInsights(dateRange);
+      data = await new GoogleProvider(pc).getInsights(dateRange);
+
+    } else if (platform === 'tiktok') {
+      if (!isTiktokConfigured(acc)) return res.json({ ok: false, error: 'TikTok not configured for this account' });
+      data = await new TiktokProvider(pc).getInsights(dateRange);
+
+    } else if (platform === 'pinterest') {
+      if (!isPinterestConfigured(acc)) return res.json({ ok: false, error: 'Pinterest not configured for this account' });
+      data = await new PinterestProvider(pc).getInsights(dateRange);
 
     } else if (platform === 'combined') {
-      const [mr, gr] = await Promise.allSettled([
-        isMetaConfigured(acc)   ? new MetaProvider(providerConfig).getInsights(dateRange)   : Promise.resolve(null),
-        isGoogleConfigured(acc) ? new GoogleProvider(providerConfig).getInsights(dateRange) : Promise.resolve(null),
-      ]);
-      const metaData   = mr.status === 'fulfilled' ? mr.value : null;
-      const googleData = gr.status === 'fulfilled' ? gr.value : null;
-      data = combineMetrics(metaData, googleData);
-      const warnings = [
-        mr.status === 'rejected' ? 'Meta: '   + mr.reason?.message : null,
-        gr.status === 'rejected' ? 'Google: ' + gr.reason?.message : null,
-      ].filter(Boolean);
+      const list = ['meta', 'google', 'tiktok', 'pinterest'];
+      const results = await Promise.allSettled(list.map(providerFor));
+      const datasets = results.map(r => r.status === 'fulfilled' ? r.value : null);
+      const warnings = results.map((r, i) => r.status === 'rejected' ? `${list[i]}: ${r.reason?.message}` : null).filter(Boolean);
+      data = combineMetrics(...datasets);
       if (!data) return res.json({ ok: false, error: warnings.join(' | ') || 'No platforms configured' });
       return res.json({ ok: true, data, warnings: warnings.length ? warnings : undefined });
     }

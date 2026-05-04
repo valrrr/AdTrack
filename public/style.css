@@ -1270,6 +1270,47 @@ body {
 .field-select option { background: var(--surface-2); color: var(--text); }
 
 /* ------------------------------------------------------------------ */
+/* Platform toggles                                                     */
+/* ------------------------------------------------------------------ */
+.platform-toggles {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ptoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.ptoggle:hover {
+  color: var(--text);
+  border-color: rgba(255,255,255,0.2);
+}
+.ptoggle.enabled {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.ptoggle.enabled svg {
+  opacity: 1;
+}
+.ptoggle svg {
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* ------------------------------------------------------------------ */
 /* Animations                                                           */
 /* ------------------------------------------------------------------ */
 @keyframes shimmer {
