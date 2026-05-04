@@ -145,9 +145,12 @@ app.get('/api/accounts', (req, res) => {
 app.post('/api/accounts', (req, res) => {
   const config = loadConfig();
   const id = `account_${Date.now()}`;
+  const newMeta = req.body.meta ?? emptyMeta();
+  if (!newMeta.app_id     && process.env.META_APP_ID)     newMeta.app_id     = process.env.META_APP_ID;
+  if (!newMeta.app_secret && process.env.META_APP_SECRET) newMeta.app_secret = process.env.META_APP_SECRET;
   config.accounts[id] = {
     name:      (req.body.name || 'New Account').trim(),
-    meta:      req.body.meta      ?? emptyMeta(),
+    meta:      newMeta,
     google:    req.body.google    ?? emptyGoogle(),
     tiktok:    req.body.tiktok    ?? emptyTiktok(),
     pinterest: req.body.pinterest ?? emptyPinterest(),
@@ -170,8 +173,8 @@ app.put('/api/accounts/:id', (req, res) => {
   config.accounts[req.params.id] = {
     name: (incoming.name || acc.name).trim(),
     meta: {
-      app_id:        incoming.meta?.app_id        ?? acc.meta?.app_id,
-      app_secret:    mask(incoming.meta?.app_secret,   acc.meta?.app_secret),
+      app_id:        incoming.meta?.app_id        || acc.meta?.app_id        || process.env.META_APP_ID     || '',
+      app_secret:    mask(incoming.meta?.app_secret,   acc.meta?.app_secret  || process.env.META_APP_SECRET || ''),
       access_token:  mask(incoming.meta?.access_token, acc.meta?.access_token),
       ad_account_id: incoming.meta?.ad_account_id ?? acc.meta?.ad_account_id,
     },
@@ -232,11 +235,7 @@ app.get('/api/accounts/:id/config', (req, res) => {
   res.json({
     id:   req.params.id,
     name: acc.name,
-    meta: {
-      ...acc.meta,
-      app_secret:   acc.meta?.app_secret   ? '••••••••' : '',
-      access_token: acc.meta?.access_token ? '••••••••' : '',
-    },
+    meta: metaDefaults(acc.meta),
     google: {
       ...acc.google,
       client_secret: acc.google?.client_secret ? '••••••••' : '',
@@ -254,6 +253,18 @@ app.get('/api/accounts/:id/config', (req, res) => {
 });
 
 // -------------------------------------------------------------------------
+// Shared credential defaults from env vars
+// -------------------------------------------------------------------------
+function metaDefaults(meta = {}) {
+  return {
+    ...meta,
+    app_id:       meta.app_id       || process.env.META_APP_ID     || '',
+    app_secret:   meta.app_secret   ? '••••••••' : (process.env.META_APP_SECRET ? '••••••••' : ''),
+    access_token: meta.access_token ? '••••••••' : '',
+  };
+}
+
+// -------------------------------------------------------------------------
 // Active account config
 // -------------------------------------------------------------------------
 
@@ -264,11 +275,7 @@ app.get('/api/config', (req, res) => {
   res.json({
     id,
     name: acc.name ?? '',
-    meta: {
-      ...acc.meta,
-      app_secret:   acc.meta?.app_secret   ? '••••••••' : '',
-      access_token: acc.meta?.access_token ? '••••••••' : '',
-    },
+    meta: metaDefaults(acc.meta),
     google: {
       ...acc.google,
       client_secret: acc.google?.client_secret ? '••••••••' : '',
