@@ -29,6 +29,8 @@ function getDateRange(range) {
       const last  = new Date(first); last.setDate(0);
       return { start: fmt(new Date(last.getFullYear(), last.getMonth(), 1)), end: fmt(last) };
     }
+    case 'maximum':
+      return { start: '2018-01-01', end: fmt(today) };
     default: {
       const s = new Date(today); s.setDate(s.getDate() - 6);
       return { start: fmt(s), end: fmt(today) };

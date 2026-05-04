@@ -9,6 +9,7 @@ const DATE_PRESETS = {
   last_30d:   'last_30d',
   this_month: 'this_month',
   last_month: 'last_month',
+  maximum:    'maximum',
 };
 
 class MetaProvider {

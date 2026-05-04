@@ -1,10 +1,10 @@
 const { GoogleAdsApi } = require('google-ads-api');
 
 const DATE_RANGE_MAP = {
-  today: 'TODAY',
-  yesterday: 'YESTERDAY',
-  last_7d: 'LAST_7_DAYS',
-  last_30d: 'LAST_30_DAYS',
+  today:      'TODAY',
+  yesterday:  'YESTERDAY',
+  last_7d:    'LAST_7_DAYS',
+  last_30d:   'LAST_30_DAYS',
   this_month: 'THIS_MONTH',
   last_month: 'LAST_MONTH',
 };
@@ -16,11 +16,16 @@ class GoogleProvider {
 
   async getInsights(dateRange = 'last_7d') {
     const { developer_token, client_id, client_secret, refresh_token, customer_id } = this.cfg;
-    const gaRange = DATE_RANGE_MAP[dateRange] ?? 'LAST_7_DAYS';
+    const gaRange = DATE_RANGE_MAP[dateRange];
     const cleanCustomerId = customer_id.replace(/-/g, '');
 
     const client = new GoogleAdsApi({ client_id, client_secret, developer_token });
     const customer = client.Customer({ customer_id: cleanCustomerId, refresh_token });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const dateClause = gaRange
+      ? `segments.date DURING ${gaRange}`
+      : `segments.date BETWEEN '2010-01-01' AND '${today}'`;
 
     const rows = await customer.query(`
       SELECT
@@ -30,7 +35,7 @@ class GoogleProvider {
         metrics.conversions,
         metrics.conversions_value
       FROM customer
-      WHERE segments.date DURING ${gaRange}
+      WHERE ${dateClause}
     `);
 
     const totals = { spend: 0, impressions: 0, clicks: 0, conversions: 0, conversions_value: 0 };
