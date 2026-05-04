@@ -10,6 +10,18 @@ const USERS_FILE = path.join(
 );
 
 function loadUsers() {
+  // Env-var mode: persists across Vercel serverless cold starts
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD_HASH) {
+    const email = process.env.ADMIN_EMAIL.toLowerCase().trim();
+    return {
+      [email]: {
+        id: 'admin',
+        name: process.env.ADMIN_NAME || 'Admin',
+        email,
+        passwordHash: process.env.ADMIN_PASSWORD_HASH,
+      }
+    };
+  }
   try {
     if (!fs.existsSync(USERS_FILE)) return {};
     return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
@@ -75,7 +87,7 @@ async function register({ name, email, password }) {
     createdAt: new Date().toISOString(),
   };
   saveUsers(users);
-  return { id, name: name.trim(), email: key };
+  return { id, name: name.trim(), email: key, passwordHash };
 }
 
 async function login({ email, password }) {
