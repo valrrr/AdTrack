@@ -1281,3 +1281,99 @@ body {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ------------------------------------------------------------------ */
+/* Mobile — 768px and below                                             */
+/* ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  /* Hide globe on mobile — perf */
+  #globe-bg { display: none; }
+
+  /* Header: compress and hide secondary buttons */
+  .header { padding: 0 16px; height: 52px; }
+  .header-right .btn-nav:not(#btn-settings):not(#btn-logout) { display: none; }
+  .platform-status { display: none; }
+  .account-name { max-width: 100px; }
+
+  /* Controls: let date tabs scroll horizontally */
+  .controls {
+    padding: 0 16px;
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .tab-group {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 8px 0;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .tab-group::-webkit-scrollbar { display: none; }
+  .tab-group + .tab-group { border-top: 1px solid var(--border); }
+  .tab { white-space: nowrap; padding: 6px 12px; min-height: 36px; }
+
+  /* KPI bar: stack vertically */
+  .kpi-bar { flex-direction: column; }
+  .kpi-item { padding: 14px 16px; }
+  .kpi-item + .kpi-item::before {
+    top: 0; left: 16px; right: 16px; bottom: auto;
+    width: auto; height: 1px;
+  }
+  .kpi-value { font-size: 20px; }
+
+  /* Metric cards: single column */
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .card-value { font-size: 20px; }
+
+  /* Page padding */
+  .page { padding: 16px; gap: 16px; }
+
+  /* AI panel */
+  .ai-panel-header { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+  .ai-niche-tag { max-width: 100%; }
+  .ai-panel-body { padding: 14px 16px; }
+
+  /* Modals: full width */
+  .modal { width: 100%; max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .modal-overlay { align-items: flex-end; }
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 14px 16px 12px; }
+  .modal-footer { padding: 12px 16px; }
+
+  /* Touch targets */
+  .btn-nav { min-height: 40px; padding: 8px 12px; }
+  .btn-primary, .btn-secondary, .btn-danger { min-height: 40px; }
+  .btn-analyze { min-height: 36px; }
+
+  /* Footer */
+  .footer-bar { padding: 10px 16px; }
+
+  /* Skeleton */
+  .skeleton-bar { height: 80px; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Small phones — 480px and below                                       */
+/* ------------------------------------------------------------------ */
+@media (max-width: 480px) {
+  .header-left { gap: 10px; }
+  .account-btn { padding: 4px 8px 4px 5px; }
+  .account-name { max-width: 80px; font-size: 12px; }
+  .logo-text { font-size: 14px; }
+
+  .kpi-value { font-size: 18px; }
+  .card-value { font-size: 18px; }
+
+  .page { padding: 12px; }
+
+  .login-wrap { padding: 24px 16px; }
+  .login-hero { padding: 32px 20px; }
+  .hero-headline { font-size: 22px; }
+}
