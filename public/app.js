@@ -633,6 +633,7 @@ function setupEventListeners() {
     document.getElementById('ai-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
   document.getElementById('btn-settings').addEventListener('click', () => openSettings(state.activeAccountId));
+  document.getElementById('btn-logout').addEventListener('click', logout);
   document.getElementById('account-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleAccountDropdown(); });
   document.getElementById('add-account-btn').addEventListener('click', () => { closeAccountDropdown(); openSettings(null); });
   document.getElementById('modal-close').addEventListener('click', closeSettings);
@@ -720,6 +721,11 @@ function showToast(msg, type = '') {
   el.className = 'toast' + (type ? ' ' + type : '');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.add('hidden'), 3500);
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login';
 }
 
 init();
