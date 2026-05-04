@@ -107,7 +107,7 @@ function getActiveAccount(config) {
 
 function isMetaConfigured(account) {
   const m = account?.meta ?? {};
-  return !!(m.app_id && m.access_token && m.ad_account_id);
+  return !!(m.access_token && m.ad_account_id);
 }
 
 function isGoogleConfigured(account) {

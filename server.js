@@ -311,7 +311,16 @@ app.get('/api/metrics', async (req, res) => {
   const { platform = 'meta', dateRange = 'last_7d' } = req.query;
   const config = await loadConfig();
   const acc    = getActiveAccount(config);
-  const pc     = { meta: acc.meta, google: acc.google, tiktok: acc.tiktok, pinterest: acc.pinterest };
+  const pc     = {
+    meta: {
+      ...acc.meta,
+      app_id:     acc.meta?.app_id     || process.env.META_APP_ID     || '',
+      app_secret: acc.meta?.app_secret || process.env.META_APP_SECRET || '',
+    },
+    google:    acc.google,
+    tiktok:    acc.tiktok,
+    pinterest: acc.pinterest,
+  };
 
   const providerFor = (p) => {
     switch (p) {
