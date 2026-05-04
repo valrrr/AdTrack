@@ -12,13 +12,17 @@ const USERS_FILE = path.join(
 const KV_KEY = 'adtracker:users';
 
 function getKV() {
-  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  // Check all env var name patterns Vercel/Upstash might inject
+  const url   = process.env.UPSTASH_REDIS_REST_URL
+             || process.env.KV_REST_API_URL
+             || process.env.STORAGE_UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+             || process.env.KV_REST_API_TOKEN
+             || process.env.STORAGE_UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
   try {
     const { Redis } = require('@upstash/redis');
-    return new Redis({
-      url:   process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    return new Redis({ url, token });
   } catch { return null; }
 }
 
@@ -26,7 +30,13 @@ async function loadUsers() {
   // 1. Upstash Redis — persistent, multi-user
   const kv = getKV();
   if (kv) {
-    try { return (await kv.get(KV_KEY)) || {}; } catch { return {}; }
+    try {
+      const data = await kv.get(KV_KEY);
+      return data || {};
+    } catch (e) {
+      console.error('[auth] Redis loadUsers error:', e.message);
+      return {};
+    }
   }
   // 2. Env-var fallback — single admin user (backward compat)
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD_HASH) {
@@ -50,7 +60,11 @@ async function loadUsers() {
 async function saveUsers(users) {
   const kv = getKV();
   if (kv) {
-    await kv.set(KV_KEY, users);
+    try {
+      await kv.set(KV_KEY, users);
+    } catch (e) {
+      console.error('[auth] Redis saveUsers error:', e.message);
+    }
     return;
   }
   const dir = path.dirname(USERS_FILE);

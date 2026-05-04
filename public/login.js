@@ -132,12 +132,8 @@ formSignup.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (!data.ok) return showAlert(data.error);
-    if (data.vercelSetup) {
-      showVercelSetup(data.vercelSetup);
-    } else {
-      showAlert('Account created! Redirecting…', 'success');
-      setTimeout(() => window.location.href = '/', 800);
-    }
+    showAlert('Account created! Redirecting…', 'success');
+    setTimeout(() => window.location.href = '/', 800);
   } catch {
     showAlert('Connection error. Please try again.');
   } finally {
@@ -147,30 +143,3 @@ formSignup.addEventListener('submit', async (e) => {
 
 /* ------------------------------------------------------------------ */
 /* Vercel env-var setup panel                                           */
-/* ------------------------------------------------------------------ */
-function showVercelSetup(setup) {
-  const panel = document.getElementById('vercel-setup-panel');
-  if (!panel) return;
-
-  document.getElementById('vs-email-val').textContent   = setup.ADMIN_EMAIL;
-  document.getElementById('vs-name-val').textContent    = setup.ADMIN_NAME;
-  document.getElementById('vs-hash-val').textContent    = setup.ADMIN_PASSWORD_HASH;
-
-  panel.classList.remove('hidden');
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-  panel.querySelectorAll('.vs-copy-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = btn.previousElementSibling.textContent;
-      navigator.clipboard.writeText(val).then(() => {
-        const orig = btn.textContent;
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = orig, 1500);
-      });
-    });
-  });
-
-  document.getElementById('vs-continue-btn').addEventListener('click', () => {
-    window.location.href = '/';
-  });
-}
