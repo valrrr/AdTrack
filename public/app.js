@@ -673,9 +673,7 @@ function setupEventListeners() {
     deleteAccount(state.editingAccountId);
   });
 
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-overlay')) closeSettings();
-  });
+  // Settings modal only closes via Cancel / X — not on outside click
   document.getElementById('niche-modal-close').addEventListener('click', closeNicheModal);
   document.getElementById('btn-cancel-niche').addEventListener('click', closeNicheModal);
   document.getElementById('btn-save-niche').addEventListener('click', saveNiche);
@@ -689,7 +687,7 @@ function setupEventListeners() {
     if (!document.getElementById('account-switcher').contains(e.target)) closeAccountDropdown();
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeSettings(); closeAccountDropdown(); closeNicheModal(); }
+    if (e.key === 'Escape') { closeAccountDropdown(); closeNicheModal(); }
   });
 
   document.getElementById('platform-toggles').querySelectorAll('.ptoggle').forEach(btn => {

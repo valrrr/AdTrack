@@ -126,8 +126,8 @@ app.get('/setup', (req, res) => {
 // Accounts
 // -------------------------------------------------------------------------
 
-app.get('/api/accounts', (req, res) => {
-  const config = loadConfig();
+app.get('/api/accounts', async (req, res) => {
+  const config = await loadConfig();
   const accounts = Object.entries(config.accounts)
     .filter(([, acc]) => !acc.ownerId || acc.ownerId === req.session.userId)
     .map(([id, acc]) => ({
@@ -142,8 +142,8 @@ app.get('/api/accounts', (req, res) => {
   res.json({ accounts, activeId: config.activeAccount });
 });
 
-app.post('/api/accounts', (req, res) => {
-  const config = loadConfig();
+app.post('/api/accounts', async (req, res) => {
+  const config = await loadConfig();
   const id = `account_${Date.now()}`;
   const newMeta = req.body.meta ?? emptyMeta();
   if (!newMeta.app_id     && process.env.META_APP_ID)     newMeta.app_id     = process.env.META_APP_ID;
@@ -156,12 +156,12 @@ app.post('/api/accounts', (req, res) => {
     pinterest: req.body.pinterest ?? emptyPinterest(),
     ownerId:   req.session.userId,
   };
-  saveConfig(config);
+  await saveConfig(config);
   res.json({ ok: true, id });
 });
 
-app.put('/api/accounts/:id', (req, res) => {
-  const config = loadConfig();
+app.put('/api/accounts/:id', async (req, res) => {
+  const config = await loadConfig();
   const acc = config.accounts[req.params.id];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
   if (acc.ownerId && acc.ownerId !== req.session.userId)
@@ -196,12 +196,12 @@ app.put('/api/accounts/:id', (req, res) => {
     ...(acc.ownerId ? { ownerId: acc.ownerId } : {}),
   };
 
-  saveConfig(config);
+  await saveConfig(config);
   res.json({ ok: true });
 });
 
-app.delete('/api/accounts/:id', (req, res) => {
-  const config = loadConfig();
+app.delete('/api/accounts/:id', async (req, res) => {
+  const config = await loadConfig();
   const acc = config.accounts[req.params.id];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
   if (acc.ownerId && acc.ownerId !== req.session.userId)
@@ -211,23 +211,23 @@ app.delete('/api/accounts/:id', (req, res) => {
   delete config.accounts[req.params.id];
   if (config.activeAccount === req.params.id)
     config.activeAccount = Object.keys(config.accounts)[0];
-  saveConfig(config);
+  await saveConfig(config);
   res.json({ ok: true });
 });
 
-app.post('/api/accounts/:id/activate', (req, res) => {
-  const config = loadConfig();
+app.post('/api/accounts/:id/activate', async (req, res) => {
+  const config = await loadConfig();
   const acc = config.accounts[req.params.id];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
   if (acc.ownerId && acc.ownerId !== req.session.userId)
     return res.status(403).json({ ok: false, error: 'Forbidden' });
   config.activeAccount = req.params.id;
-  saveConfig(config);
+  await saveConfig(config);
   res.json({ ok: true });
 });
 
-app.get('/api/accounts/:id/config', (req, res) => {
-  const config = loadConfig();
+app.get('/api/accounts/:id/config', async (req, res) => {
+  const config = await loadConfig();
   const acc = config.accounts[req.params.id];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
   if (acc.ownerId && acc.ownerId !== req.session.userId)
@@ -268,8 +268,8 @@ function metaDefaults(meta = {}) {
 // Active account config
 // -------------------------------------------------------------------------
 
-app.get('/api/config', (req, res) => {
-  const config = loadConfig();
+app.get('/api/config', async (req, res) => {
+  const config = await loadConfig();
   const id  = config.activeAccount;
   const acc = config.accounts[id] ?? {};
   res.json({
@@ -292,8 +292,8 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-app.get('/api/config/status', (req, res) => {
-  const config = loadConfig();
+app.get('/api/config/status', async (req, res) => {
+  const config = await loadConfig();
   const acc = getActiveAccount(config);
   res.json({
     meta:      isMetaConfigured(acc),
@@ -309,7 +309,7 @@ app.get('/api/config/status', (req, res) => {
 
 app.get('/api/metrics', async (req, res) => {
   const { platform = 'meta', dateRange = 'last_7d' } = req.query;
-  const config = loadConfig();
+  const config = await loadConfig();
   const acc    = getActiveAccount(config);
   const pc     = { meta: acc.meta, google: acc.google, tiktok: acc.tiktok, pinterest: acc.pinterest };
 
@@ -381,25 +381,25 @@ app.get('/api/meta-info', (req, res) => res.json({ METRICS, METRIC_ORDER }));
 // Niche / AI
 // -------------------------------------------------------------------------
 
-app.get('/api/niche', (req, res) => {
-  const config = loadConfig();
+app.get('/api/niche', async (req, res) => {
+  const config = await loadConfig();
   const acc = config.accounts[config.activeAccount] ?? {};
   res.json({ niche: acc.niche ?? null, objective: acc.objective ?? null, aov: acc.aov ?? null });
 });
 
-app.post('/api/niche', (req, res) => {
-  const config = loadConfig();
+app.post('/api/niche', async (req, res) => {
+  const config = await loadConfig();
   const acc = config.accounts[config.activeAccount];
   if (!acc) return res.status(404).json({ ok: false, error: 'Account not found' });
   if (req.body.niche     !== undefined) acc.niche     = req.body.niche;
   if (req.body.objective !== undefined) acc.objective = req.body.objective;
   if (req.body.aov       !== undefined) acc.aov       = req.body.aov;
-  saveConfig(config);
+  await saveConfig(config);
   res.json({ ok: true });
 });
 
 app.post('/api/analyze', async (req, res) => {
-  const config = loadConfig();
+  const config = await loadConfig();
   const acc = getActiveAccount(config);
   if (!acc.niche) return res.status(400).json({ ok: false, error: 'Niche not configured' });
 
