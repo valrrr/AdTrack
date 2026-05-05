@@ -1180,15 +1180,15 @@ body {
 
 /* Stream area */
 .ai-stream-area {
-  max-height: 420px; overflow-y: auto;
+  max-height: 220px; overflow-y: auto;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
   border: 1px solid var(--border);
 }
 .ai-stream-text {
-  font-size: 13px; color: var(--text); line-height: 1.7;
+  font-size: 12px; color: var(--text-muted); line-height: 1.6;
   white-space: pre-wrap; font-family: inherit; margin: 0;
-  padding: 16px; word-break: break-word;
+  padding: 14px; word-break: break-word;
 }
 .ai-cursor {
   display: inline-block;
@@ -1202,20 +1202,52 @@ body {
 
 /* Rendered markdown */
 .ai-result {
-  font-size: 13px; color: var(--text); line-height: 1.7;
-  max-height: 520px; overflow-y: auto;
+  font-size: 13px; color: var(--text-muted); line-height: 1.65;
 }
-.ai-result h2 {
-  font-size: 14px; font-weight: 700; color: var(--text);
-  margin: 18px 0 8px; padding-bottom: 5px;
+.ai-result h2, .ai-result h3 { display: none; }
+.ai-result p { margin: 0 0 10px; }
+.ai-result p:last-of-type { margin-bottom: 0; }
+.ai-result ul {
+  margin: 0 0 10px; padding: 0; list-style: none;
+}
+.ai-result ul li {
+  padding: 5px 0 5px 18px;
+  position: relative;
   border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  margin: 0;
 }
-.ai-result h2:first-child { margin-top: 0; }
-.ai-result h3 { font-size: 13px; font-weight: 700; margin: 12px 0 5px; color: var(--text); }
-.ai-result p  { margin: 0 0 8px; }
-.ai-result ul, .ai-result ol { margin: 0 0 10px; padding-left: 20px; }
-.ai-result li { margin-bottom: 4px; }
-.ai-result strong { color: var(--text); }
+.ai-result ul li:last-child { border-bottom: none; }
+.ai-result ul li::before {
+  content: '↓';
+  position: absolute; left: 0;
+  color: var(--red); font-size: 11px; font-weight: 700;
+  top: 6px;
+}
+.ai-result ol {
+  margin: 0 0 10px; padding: 0; list-style: none; counter-reset: ai-steps;
+}
+.ai-result ol li {
+  counter-increment: ai-steps;
+  padding: 5px 0 5px 24px;
+  position: relative;
+  color: var(--text-muted);
+  margin: 0;
+}
+.ai-result ol li::before {
+  content: counter(ai-steps);
+  position: absolute; left: 0;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px; font-weight: 700;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  top: 6px;
+}
+.ai-result strong {
+  color: var(--text); font-weight: 600;
+}
 .ai-result code {
   background: var(--surface-2); padding: 1px 5px; border-radius: 3px;
   font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;

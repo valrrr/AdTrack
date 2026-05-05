@@ -4,9 +4,11 @@ const { METRICS, METRIC_ORDER, formatValue } = require('./benchmarks');
 const client = new Anthropic();
 
 const PLATFORM_LABELS = {
-  meta:     'Meta (Facebook/Instagram) Ads',
-  google:   'Google Ads',
-  combined: 'Meta + Google Ads (Combined)',
+  meta:      'Meta Ads',
+  google:    'Google Ads',
+  tiktok:    'TikTok Ads',
+  pinterest: 'Pinterest Ads',
+  combined:  'All Platforms',
 };
 
 const DATE_LABELS = {
@@ -16,6 +18,7 @@ const DATE_LABELS = {
   last_30d:   'Last 30 days',
   this_month: 'This month',
   last_month: 'Last month',
+  maximum:    'All time',
 };
 
 async function* analyzeMetrics({ metrics, niche, objective, aov, platform, dateRange }) {
@@ -24,50 +27,37 @@ async function* analyzeMetrics({ metrics, niche, objective, aov, platform, dateR
       if (metrics[key] == null) return null;
       const m = METRICS[key];
       if (!m) return null;
-      return `- ${m.label}: ${formatValue(key, metrics[key])}`;
+      return `${m.label}: ${formatValue(key, metrics[key])}`;
     })
     .filter(Boolean)
-    .join('\n');
+    .join(' | ');
 
   const platformLabel = PLATFORM_LABELS[platform] ?? platform;
   const dateLabel     = DATE_LABELS[dateRange]    ?? dateRange;
+  const aovLine       = aov ? ` | AOV $${aov}` : '';
 
-  // Extra context for appointment-based businesses
-  const appointmentNote = objective === 'Book Appointments'
-    ? '\nNote: For this business, a "conversion" means an appointment booked. Focus CPA analysis on cost-per-booking and optimise for high-intent local audiences.'
-    : '';
+  const prompt = `Senior ad analyst. Blunt, specific, no filler.
 
-  const prompt = `You are an expert digital marketing analyst. Analyze these ad metrics and give direct, specific insights — no fluff.
-
-**Business:** ${niche}
-**Goal:** ${objective}${aov ? ` | Avg order value: $${aov}` : ''}${appointmentNote}
-**Platform:** ${platformLabel}
-**Period:** ${dateLabel}
-
-**Metrics:**
+${niche} | ${objective}${aovLine} | ${platformLabel} | ${dateLabel}
 ${metricLines}
 
-Respond with exactly these sections:
+Reply in this exact format — nothing else:
 
-## Performance Summary
-2–3 sentences. Is this account performing well for a ${niche} business trying to ${objective}? Be blunt.
+**Verdict:** [1-2 sentences on overall performance. Is it profitable or burning money?]
 
-## What's Working
-List 1–3 specific metrics that are strong. Explain why each matters for this niche.
+**Fix:**
+• [worst metric]: [value] — [specific fix + target number]
+• [second issue]: [value] — [specific fix + target number]
+• [third issue]: [value] — [specific fix + target number]
 
-## What Needs Fixing
-List the 2–3 biggest problems. Give realistic target numbers to aim for.
+**Do now:**
+1. [action specific to ${niche}, ≤12 words]
+2. [action specific to ${niche}, ≤12 words]
+3. [action specific to ${niche}, ≤12 words]`;
 
-## Action Plan
-Give exactly 5 numbered recommendations. Each must be specific to ${niche} — name ad formats, audience types, copy angles, or budget moves. No generic tips.
-
-## Campaign Ideas
-Suggest 2–3 campaign types that work well for ${niche} businesses focused on ${objective}. Include the format, targeting approach, and why it fits.`;
-
-  // No thinking — stream text tokens immediately
   const stream = client.messages.stream({
-    model:      'claude-opus-4-6',
-    max_tokens: 1500,
+    model:      'claude-haiku-4-5-20251001',
+    max_tokens: 500,
     messages:   [{ role: 'user', content: prompt }],
   });
 
