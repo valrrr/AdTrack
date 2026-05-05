@@ -80,7 +80,7 @@ body {
 .header-left  { display: flex; align-items: center; gap: 20px; }
 .header-right { display: flex; align-items: center; gap: 6px; }
 
-.logo { display: flex; align-items: center; gap: 9px; }
+.logo { display: flex; align-items: center; gap: 9px; cursor: pointer; color: inherit; }
 .logo-mark {
   width: 26px; height: 26px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
