@@ -329,11 +329,16 @@ async function openSettings(accountId) {
   document.getElementById('btn-save-settings').textContent = isNew ? 'Create Account' : 'Save';
 
   if (isNew) {
-    // Blank form
     document.getElementById('account-name-input').value = '';
     clearCredentialFields();
-    document.getElementById('dot-meta').classList.remove('connected');
-    document.getElementById('dot-google').classList.remove('connected');
+    // Pre-fill shared credentials from env vars
+    const defRes = await fetch('/api/config/defaults');
+    const defs = defRes.ok ? await defRes.json() : {};
+    document.getElementById('meta-app-id').value     = defs.meta?.app_id     || '';
+    document.getElementById('meta-app-secret').value = defs.meta?.app_secret || '';
+    ['dot-meta','dot-google','dot-tiktok','dot-pinterest'].forEach(id => {
+      document.getElementById(id)?.classList.remove('connected');
+    });
   } else {
     // Fetch masked config for this account
     const res = await fetch(`/api/config`); // returns active account; for non-active we read from accounts list

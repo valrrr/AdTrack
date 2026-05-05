@@ -292,6 +292,15 @@ app.get('/api/config', async (req, res) => {
   });
 });
 
+app.get('/api/config/defaults', (req, res) => {
+  res.json({
+    meta: {
+      app_id:     process.env.META_APP_ID     || '',
+      app_secret: process.env.META_APP_SECRET ? '••••••••' : '',
+    },
+  });
+});
+
 app.get('/api/config/status', async (req, res) => {
   const config = await loadConfig();
   const acc = getActiveAccount(config);
