@@ -18,10 +18,10 @@ const app = express();
 app.use(express.json());
 
 // Session (cookie-session: stateless, survives serverless restarts)
+// No default maxAge — set per-request in the login handler based on rememberMe
 app.use(cookieSession({
-  name:   'adtracker.session',
-  secret: getSessionSecret(),
-  maxAge: 100 * 365 * 24 * 60 * 60 * 1000, // default: long-lived; overridden per-request
+  name:     'adtracker.session',
+  secret:   getSessionSecret(),
   httpOnly: true,
   sameSite: 'lax',
 }));
@@ -84,8 +84,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = await login({ email, password });
     req.session.userId = user.id;
     req.session.user   = { id: user.id, name: user.name, email: user.email };
-    // Remember me: long-lived cookie vs session cookie
-    if (!rememberMe) req.sessionOptions.maxAge = undefined;
+    if (rememberMe) req.sessionOptions.maxAge = 100 * 365 * 24 * 60 * 60 * 1000;
     res.json({ ok: true, user: req.session.user });
   } catch (err) {
     res.status(401).json({ ok: false, error: err.message });
