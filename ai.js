@@ -12,13 +12,13 @@ const PLATFORM_LABELS = {
 };
 
 const DATE_LABELS = {
-  today:      'Today',
-  yesterday:  'Yesterday',
-  last_7d:    'Last 7 days',
-  last_30d:   'Last 30 days',
-  this_month: 'This month',
-  last_month: 'Last month',
-  maximum:    'All time',
+  today:      'today',
+  yesterday:  'yesterday',
+  last_7d:    'the last 7 days',
+  last_30d:   'the last 30 days',
+  this_month: 'this month',
+  last_month: 'last month',
+  maximum:    'all time',
 };
 
 async function* analyzeMetrics({ metrics, niche, objective, aov, platform, dateRange }) {
@@ -34,26 +34,29 @@ async function* analyzeMetrics({ metrics, niche, objective, aov, platform, dateR
 
   const platformLabel = PLATFORM_LABELS[platform] ?? platform;
   const dateLabel     = DATE_LABELS[dateRange]    ?? dateRange;
-  const aovLine       = aov ? ` | AOV $${aov}` : '';
+  const aovLine       = aov ? ` | avg sale $${aov}` : '';
 
-  const prompt = `Senior ad analyst. Blunt, specific, no filler.
+  const prompt = `You write weekly ad campaign updates for business owners — not marketers. Plain English only. No jargon.
 
-${niche} | ${objective}${aovLine} | ${platformLabel} | ${dateLabel}
-${metricLines}
+Business: ${niche} | Goal: ${objective}${aovLine} | Platform: ${platformLabel} | Period: ${dateLabel}
+Ad data: ${metricLines}
 
-Reply in this exact format — nothing else:
+Reply in EXACTLY this format — no extra text, no markdown symbols:
 
-**Verdict:** [1-2 sentences on overall performance. Is it profitable or burning money?]
+VERDICT: [One honest sentence. Mention money spent and the main result (leads, sales, or reach). Say clearly if it's going well or needs work.]
 
-**Fix:**
-• [worst metric]: [value] — [specific fix + target number]
-• [second issue]: [value] — [specific fix + target number]
-• [third issue]: [value] — [specific fix + target number]
+RESULTS:
+• [impressions] people saw the ads
+• [clicks] visited your site or offer
+• [conversions] [leads/sales/bookings] at $[cpa] each
+• $[spend] spent ${dateLabel}
 
-**Do now:**
-1. [action specific to ${niche}, ≤12 words]
-2. [action specific to ${niche}, ≤12 words]
-3. [action specific to ${niche}, ≤12 words]`;
+NEEDS:
+• [Specific creative ask — e.g. "Send us 3–4 new photos of your work or team so we can test fresh ads"]
+• [Specific info they should share — upcoming offers, events, new services, seasonal changes]
+• [Specific feedback that helps targeting — who's been calling, what questions customers ask, what's selling]
+
+TIP: [One thing they can do this week that directly helps results. Under 20 words. Actionable, not vague.]`;
 
   const stream = client.messages.stream({
     model:      'claude-haiku-4-5-20251001',

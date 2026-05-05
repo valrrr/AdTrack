@@ -630,14 +630,14 @@ async function analyzeWithAI() {
       }
     }
 
-    // Render finished markdown
+    // Render structured report
     if (state.lastAnalysis) {
       const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       body.innerHTML = `
-        <div class="ai-result">${window.marked ? window.DOMPurify.sanitize(window.marked.parse(state.lastAnalysis)) : `<pre>${esc(state.lastAnalysis)}</pre>`}</div>
+        <div class="air">${renderAIReport(parseAIReport(state.lastAnalysis))}</div>
         <div class="ai-result-footer">
-          <button class="btn-reanalyze" id="btn-reanalyze">↻ Re-analyze</button>
-          <span class="ai-result-ts">Generated ${ts} · ${state.enabledPlatforms.join('+') } · ${state.dateRange.replace(/_/g,' ')}</span>
+          <button class="btn-reanalyze" id="btn-reanalyze">↻ Refresh</button>
+          <span class="ai-result-ts">Generated ${ts} · ${state.enabledPlatforms.join('+')} · ${state.dateRange.replace(/_/g,' ')}</span>
         </div>`;
       document.getElementById('btn-reanalyze').addEventListener('click', () => {
         state.lastAnalysis = '';
@@ -776,6 +776,72 @@ function showToast(msg, type = '') {
 async function logout() {
   await fetch('/api/auth/logout', { method: 'POST' });
   window.location.href = '/login';
+}
+
+/* ------------------------------------------------------------------ */
+/* AI report parser + renderer                                          */
+/* ------------------------------------------------------------------ */
+function parseAIReport(text) {
+  const verdict = (text.match(/VERDICT:\s*([^\n]+)/) || [])[1]?.trim() || '';
+
+  const resultsBlock = (text.match(/RESULTS:\s*([\s\S]*?)(?=\nNEEDS:|\nTIP:|$)/) || [])[1] || '';
+  const results = resultsBlock.split('\n')
+    .map(l => l.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+
+  const needsBlock = (text.match(/NEEDS:\s*([\s\S]*?)(?=\nTIP:|$)/) || [])[1] || '';
+  const needs = needsBlock.split('\n')
+    .map(l => l.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+
+  const tip = (text.match(/TIP:\s*([^\n]+)/) || [])[1]?.trim() || '';
+
+  return { verdict, results, needs, tip };
+}
+
+function renderAIReport({ verdict, results, needs, tip }) {
+  const icons = [
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  ];
+
+  const resultsHtml = results.length ? `
+    <div class="air-results">
+      ${results.map((r, i) => `
+        <div class="air-result-item">
+          <span class="air-result-icon">${icons[i] || icons[0]}</span>
+          <span>${esc(r)}</span>
+        </div>`).join('')}
+    </div>` : '';
+
+  const needsHtml = needs.length ? `
+    <div class="air-needs">
+      <div class="air-section-label">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Action items for you
+      </div>
+      ${needs.map(n => `
+        <div class="air-need-item">
+          <span class="air-need-check"></span>
+          <span>${esc(n)}</span>
+        </div>`).join('')}
+    </div>` : '';
+
+  const tipHtml = tip ? `
+    <div class="air-tip">
+      <svg class="air-tip-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>
+        <div class="air-tip-label">Quick tip</div>
+        <div class="air-tip-body">${esc(tip)}</div>
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="air-verdict">${esc(verdict)}</div>
+    ${resultsHtml}
+    ${needsHtml}
+    ${tipHtml}
+  `;
 }
 
 init();

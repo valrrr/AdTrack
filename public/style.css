@@ -1200,60 +1200,129 @@ body {
 }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* Rendered markdown */
-.ai-result {
-  font-size: 13px; color: var(--text-muted); line-height: 1.65;
+/* ------------------------------------------------------------------ */
+/* AI Report — structured client-facing layout                         */
+/* ------------------------------------------------------------------ */
+.air {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-.ai-result h2, .ai-result h3 { display: none; }
-.ai-result p { margin: 0 0 10px; }
-.ai-result p:last-of-type { margin-bottom: 0; }
-.ai-result ul {
-  margin: 0 0 10px; padding: 0; list-style: none;
-}
-.ai-result ul li {
-  padding: 5px 0 5px 18px;
-  position: relative;
+
+/* Verdict */
+.air-verdict {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+  font-weight: 400;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  margin: 0;
 }
-.ai-result ul li:last-child { border-bottom: none; }
-.ai-result ul li::before {
-  content: '↓';
-  position: absolute; left: 0;
-  color: var(--red); font-size: 11px; font-weight: 700;
-  top: 6px;
+
+/* Results grid */
+.air-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
 }
-.ai-result ol {
-  margin: 0 0 10px; padding: 0; list-style: none; counter-reset: ai-steps;
-}
-.ai-result ol li {
-  counter-increment: ai-steps;
-  padding: 5px 0 5px 24px;
-  position: relative;
-  color: var(--text-muted);
-  margin: 0;
-}
-.ai-result ol li::before {
-  content: counter(ai-steps);
-  position: absolute; left: 0;
-  background: var(--accent);
-  color: #fff;
-  font-size: 10px; font-weight: 700;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  top: 6px;
-}
-.ai-result strong {
-  color: var(--text); font-weight: 600;
-}
-.ai-result code {
-  background: var(--surface-2); padding: 1px 5px; border-radius: 3px;
-  font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
+
+.air-result-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  color: #a78bfa;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  transition: border-color 0.15s;
 }
+
+.air-result-item:hover { border-color: var(--border-2); }
+
+.air-result-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+}
+
+/* Section label */
+.air-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-subtle);
+  margin-bottom: 10px;
+}
+
+/* Needs checklist */
+.air-needs {}
+
+.air-need-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.air-need-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.air-need-check {
+  width: 17px; height: 17px;
+  border: 1.5px solid var(--border-2);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: var(--surface-2);
+}
+
+/* Tip callout */
+.air-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(124,58,237,0.1) 0%, rgba(217,70,239,0.05) 100%);
+  border: 1px solid rgba(124,58,237,0.22);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.air-tip-icon {
+  color: #a78bfa;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.air-tip-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: #a78bfa;
+  margin-bottom: 4px;
+}
+
+.air-tip-body {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* Legacy — keep for any fallback rendering */
+.ai-result { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+.ai-result strong { color: var(--text); font-weight: 600; }
 
 .ai-result-footer {
   display: flex; align-items: center; gap: 10px;
