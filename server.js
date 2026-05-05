@@ -2,7 +2,7 @@ const express       = require('express');
 const cookieSession = require('cookie-session');
 const path          = require('path');
 const {
-  loadConfig, saveConfig, getActiveAccount,
+  loadConfig, saveConfig, getActiveAccount, checkRateLimit,
   isMetaConfigured, isGoogleConfigured, isTiktokConfigured, isPinterestConfigured,
   emptyMeta, emptyGoogle, emptyTiktok, emptyPinterest, getSessionSecret,
 } = require('./config');
@@ -414,6 +414,9 @@ app.post('/api/analyze', async (req, res) => {
 
   const { metrics, platform, dateRange } = req.body;
   if (!metrics) return res.status(400).json({ ok: false, error: 'No metrics provided' });
+
+  const allowed = await checkRateLimit(`analyze:${req.session.userId}`, 15);
+  if (!allowed) return res.status(429).json({ ok: false, error: 'rate_limited' });
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');

@@ -91,6 +91,25 @@ async function loadConfig() {
   return cfg;
 }
 
+const _rlCache = new Map();
+async function checkRateLimit(key, windowSecs) {
+  const kv = getKV();
+  if (kv) {
+    try {
+      const hit = await kv.get(`ad-tracker:rl:${key}`);
+      if (hit) return false;
+      await kv.set(`ad-tracker:rl:${key}`, 1, { ex: windowSecs });
+      return true;
+    } catch {}
+  }
+  // Local dev fallback
+  const now = Date.now();
+  const last = _rlCache.get(key);
+  if (last && now - last < windowSecs * 1000) return false;
+  _rlCache.set(key, now);
+  return true;
+}
+
 async function saveConfig(config) {
   const kv = getKV();
   if (kv) {
@@ -134,7 +153,7 @@ function getSessionSecret() {
 }
 
 module.exports = {
-  loadConfig, saveConfig, getActiveAccount,
+  loadConfig, saveConfig, getActiveAccount, checkRateLimit,
   isMetaConfigured, isGoogleConfigured, isTiktokConfigured, isPinterestConfigured,
   emptyMeta, emptyGoogle, emptyTiktok, emptyPinterest, getSessionSecret,
 };

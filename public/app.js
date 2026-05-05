@@ -22,6 +22,7 @@ const state = {
   analyzing: false,
   lastMetrics: null,
   lastAnalysis: '',
+  lastAnalysisTime: 0,
 };
 
 /* ------------------------------------------------------------------ */
@@ -474,6 +475,8 @@ function renderAIPanel() {
 
   // Niche configured — render header
   const canAnalyze = !!state.lastMetrics;
+  const cooldownRemaining = Math.max(0, 15 - Math.floor((Date.now() - state.lastAnalysisTime) / 1000));
+  const ready = canAnalyze && cooldownRemaining === 0;
   actions.innerHTML = `
     <div class="ai-niche-tag">
       <span class="ai-niche-name">${esc(state.niche)}</span>
@@ -481,9 +484,9 @@ function renderAIPanel() {
       <span class="ai-niche-obj">${esc(state.objective || 'Conversions')}</span>
     </div>
     <button class="btn-ai-edit" id="btn-edit-niche" title="Edit niche settings">Edit</button>
-    <button class="btn-analyze${canAnalyze ? '' : ' btn-analyze-dim'}" id="btn-analyze-now" ${canAnalyze ? '' : 'disabled'} title="${canAnalyze ? 'Run AI analysis on current metrics' : 'Load metrics first'}">
+    <button class="btn-analyze${ready ? '' : ' btn-analyze-dim'}" id="btn-analyze-now" ${ready ? '' : 'disabled'}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-      Analyze
+      ${cooldownRemaining > 0 ? `${cooldownRemaining}s` : 'Analyze'}
     </button>`;
 
   document.getElementById('btn-edit-niche').addEventListener('click', openNicheModal);
@@ -585,6 +588,7 @@ async function analyzeWithAI() {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: response.statusText }));
+      if (response.status === 429) throw new Error('Too many analyses — wait a moment and try again.');
       throw new Error(err.error || 'Analysis failed');
     }
 
@@ -649,7 +653,14 @@ async function analyzeWithAI() {
     state.lastAnalysis = '';
   } finally {
     state.analyzing = false;
-    renderAIPanel(); // restore header (Analyze button back)
+    state.lastAnalysisTime = Date.now();
+    renderAIPanel();
+    // Tick every second until cooldown expires
+    const tick = setInterval(() => {
+      const remaining = 15 - Math.floor((Date.now() - state.lastAnalysisTime) / 1000);
+      renderAIPanel();
+      if (remaining <= 0) clearInterval(tick);
+    }, 1000);
   }
 }
 
