@@ -861,69 +861,6 @@ body {
   .login-brand-mobile { display: flex; }
 }
 
-/* ------------------------------------------------------------------ */
-/* Dashboard mobile                                                     */
-/* ------------------------------------------------------------------ */
-@media (max-width: 768px) {
-  /* Header */
-  .header { padding: 0 12px; height: 52px; }
-  .header-left { gap: 10px; }
-  .platform-status { display: none; }
-  .btn-nav span, .btn-nav-ai span { display: none; }
-  .btn-nav { padding: 6px 8px; }
-  .logo-text { font-size: 13px; }
-
-  /* Account switcher */
-  .account-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  /* Controls: stack platform tabs above date tabs, both scrollable */
-  .controls {
-    height: auto;
-    padding: 6px 10px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  .tab-group {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    width: 100%;
-    flex-shrink: 0;
-  }
-  .tab-group::-webkit-scrollbar { display: none; }
-  .tab { padding: 5px 10px; font-size: 12px; white-space: nowrap; }
-
-  /* Page */
-  .page { padding: 12px; gap: 12px; }
-
-  /* KPI bar: 2 columns grid on mobile */
-  .kpi-bar {
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-  .kpi-item {
-    flex: 1 1 calc(50% - 1px);
-    min-width: 0;
-    padding: 14px 14px;
-  }
-  .kpi-item + .kpi-item::before { display: none; }
-  .kpi-value { font-size: 20px; }
-  .kpi-label { font-size: 10px; }
-
-  /* Metrics grid: single column */
-  .metrics-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .metric-card { padding: 14px; }
-
-  /* AI panel */
-  .ai-panel-body { max-height: 260px; }
-
-  /* Modal full screen */
-  .modal { max-width: 95vw; margin: 0 12px; }
-}
 
 .login-brand {
   display: flex;
@@ -1428,92 +1365,109 @@ body {
 /* Mobile — 768px and below                                             */
 /* ------------------------------------------------------------------ */
 @media (max-width: 768px) {
-  /* Hide globe on mobile — perf */
   #globe-bg { display: none; }
 
-  /* Header: compress and hide secondary buttons */
-  .header { padding: 0 16px; height: 52px; }
+  /* Header */
+  .header { padding: 0 12px; height: 48px; }
+  .header-left { gap: 8px; }
   .header-right .btn-nav:not(#btn-settings):not(#btn-logout) { display: none; }
   .platform-status { display: none; }
-  .account-name { max-width: 100px; }
+  .account-name { max-width: 90px; }
+  .btn-nav { min-height: 36px; padding: 5px 10px; }
 
-  /* Controls: let date tabs scroll horizontally */
+  /* Controls: compact scrollable rows */
   .controls {
-    padding: 0 16px;
+    padding: 0 12px;
     height: auto;
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
   }
+  .platform-toggles {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 5px 0;
+    flex-wrap: nowrap;
+  }
+  .platform-toggles::-webkit-scrollbar { display: none; }
+  .ptoggle { padding: 4px 9px; font-size: 11px; }
   .tab-group {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: 8px 0;
+    padding: 5px 0;
     gap: 2px;
     flex-shrink: 0;
   }
   .tab-group::-webkit-scrollbar { display: none; }
-  .tab-group + .tab-group { border-top: 1px solid var(--border); }
-  .tab { white-space: nowrap; padding: 6px 12px; min-height: 36px; }
+  .platform-toggles + .tab-group { border-top: 1px solid var(--border); }
+  .tab { white-space: nowrap; padding: 4px 10px; min-height: 28px; font-size: 12px; }
 
-  /* KPI bar: stack vertically */
-  .kpi-bar { flex-direction: column; }
-  .kpi-item { padding: 14px 16px; }
-  .kpi-item + .kpi-item::before {
-    top: 0; left: 16px; right: 16px; bottom: auto;
-    width: auto; height: 1px;
-  }
-  .kpi-value { font-size: 20px; }
+  /* Page */
+  .page { padding: 10px; gap: 10px; }
 
-  /* Metric cards: single column */
-  .metrics-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .card-value { font-size: 20px; }
+  /* KPI bar: 2-column grid */
+  .kpi-bar { display: grid; grid-template-columns: 1fr 1fr; }
+  .kpi-item { padding: 12px 12px; gap: 4px; }
+  .kpi-item + .kpi-item::before { display: none; }
+  .kpi-item:nth-child(2n)   { border-left: 1px solid var(--border); }
+  .kpi-item:nth-child(n+3)  { border-top:  1px solid var(--border); }
+  .kpi-value { font-size: 19px; }
+  .kpi-label { font-size: 10px; }
+  .kpi-badge { font-size: 10px; padding: 1px 6px; }
 
-  /* Page padding */
-  .page { padding: 16px; gap: 16px; }
+  /* Metric cards: 2-column grid */
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .metric-card { padding: 11px 11px; }
+  .card-value { font-size: 18px; }
+  .card-label { font-size: 10px; }
 
   /* AI panel */
-  .ai-panel-header { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+  .ai-panel-header { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
   .ai-niche-tag { max-width: 100%; }
-  .ai-panel-body { padding: 14px 16px; }
+  .ai-panel-body { padding: 12px; }
+  .air-results { grid-template-columns: 1fr; }
+  .air-verdict { font-size: 13px; padding-bottom: 12px; }
+  .air-section-label { margin-bottom: 7px; }
+  .air-need-item { font-size: 12px; padding: 8px 0; }
+  .air-tip { padding: 12px; }
 
-  /* Modals: full width */
+  /* Modals: bottom sheet */
   .modal { width: 100%; max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
   .modal-overlay { align-items: flex-end; }
-  .modal-body { padding: 16px; }
-  .modal-header { padding: 14px 16px 12px; }
-  .modal-footer { padding: 12px 16px; }
+  .modal-body { padding: 14px; }
+  .modal-header { padding: 12px 14px 10px; }
+  .modal-footer { padding: 10px 14px; }
 
   /* Touch targets */
-  .btn-nav { min-height: 40px; padding: 8px 12px; }
   .btn-primary, .btn-secondary, .btn-danger { min-height: 40px; }
-  .btn-analyze { min-height: 36px; }
+  .btn-analyze { min-height: 34px; }
 
   /* Footer */
-  .footer-bar { padding: 10px 16px; }
+  .footer-bar { padding: 8px 12px; }
 
   /* Skeleton */
-  .skeleton-bar { height: 80px; }
+  .skeleton-bar { height: 60px; }
 }
 
 /* ------------------------------------------------------------------ */
 /* Small phones — 480px and below                                       */
 /* ------------------------------------------------------------------ */
 @media (max-width: 480px) {
-  .header-left { gap: 10px; }
-  .account-btn { padding: 4px 8px 4px 5px; }
-  .account-name { max-width: 80px; font-size: 12px; }
-  .logo-text { font-size: 14px; }
+  .account-btn { padding: 4px 6px 4px 4px; }
+  .account-name { max-width: 70px; font-size: 12px; }
+  .logo-text { font-size: 13px; }
 
-  .kpi-value { font-size: 18px; }
-  .card-value { font-size: 18px; }
+  .kpi-value { font-size: 17px; }
+  .kpi-item { padding: 10px 10px; }
+  .card-value { font-size: 16px; }
+  .metric-card { padding: 9px 10px; }
 
-  .page { padding: 12px; }
+  .page { padding: 8px; gap: 8px; }
+  .metrics-grid { gap: 6px; }
 
   .login-wrap { padding: 24px 16px; }
   .login-hero { padding: 32px 20px; }
