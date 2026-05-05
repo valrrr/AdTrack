@@ -242,7 +242,7 @@ function renderKpiBar(data) {
     item.innerHTML = `
       <div class="kpi-label">${esc(m.label)}</div>
       <div class="kpi-value${value == null ? ' na' : ''}">${esc(formatted)}</div>
-      ${rating ? `<div class="kpi-badge ${rating}"><span class="kpi-dot"></span>${{ good: 'Good', ok: 'On track', poor: 'Needs attention' }[rating]}</div>` : ''}
+      ${rating ? `<div class="kpi-badge ${rating}"><span class="kpi-dot"></span>${{ excellent: 'Excellent', good: 'Good', ok: 'On track', poor: 'Needs attention' }[rating]}</div>` : ''}
     `;
     bar.appendChild(item);
   }
@@ -274,7 +274,7 @@ function renderCards(data) {
     card.innerHTML = `
       <div class="card-top">
         <div class="card-label">${esc(m.label)}</div>
-        ${rating ? `<div class="card-badge ${rating}"><span class="card-badge-dot"></span>${{ good: 'Good', ok: 'OK', poor: 'Poor' }[rating]}</div>` : ''}
+        ${rating ? `<div class="card-badge ${rating}"><span class="card-badge-dot"></span>${{ excellent: 'Excellent', good: 'Good', ok: 'OK', poor: 'Poor' }[rating]}</div>` : ''}
       </div>
       <div class="card-value${value == null ? ' na' : ''}">${esc(formatValue(m, value))}</div>
       <hr class="card-divider" />
@@ -737,12 +737,14 @@ function setupEventListeners() {
 /* ------------------------------------------------------------------ */
 function getRating(m, value) {
   if (!m.hasRating || value == null) return null;
-  const { green, yellow } = m.thresholds;
+  const { excellent, green, yellow } = m.thresholds;
   if (!m.inverted) {
+    if (excellent != null && value >= excellent) return 'excellent';
     if (value >= green) return 'good';
     if (value >= yellow) return 'ok';
     return 'poor';
   } else {
+    if (excellent != null && value <= excellent) return 'excellent';
     if (value <= green) return 'good';
     if (value <= yellow) return 'ok';
     return 'poor';

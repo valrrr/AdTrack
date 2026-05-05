@@ -370,10 +370,11 @@ body {
   background: transparent;
   transition: background 0.3s;
 }
-.kpi-item.status-good::after    { background: var(--green); box-shadow: 0 0 8px var(--green); }
-.kpi-item.status-ok::after      { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-.kpi-item.status-poor::after    { background: var(--red); box-shadow: 0 0 8px var(--red); }
-.kpi-item.status-neutral::after { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.kpi-item.status-excellent::after { background: #F59E0B; box-shadow: 0 0 8px #F59E0B; }
+.kpi-item.status-good::after      { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.kpi-item.status-ok::after        { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.kpi-item.status-poor::after      { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.kpi-item.status-neutral::after   { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 
 .kpi-label {
   font-size: 11px;
@@ -402,18 +403,20 @@ body {
   font-weight: 600;
   width: fit-content;
 }
-.kpi-badge.good   { color: var(--green);  background: var(--green-light);  border: 1px solid var(--green-border); }
-.kpi-badge.ok     { color: var(--yellow); background: var(--yellow-light); border: 1px solid var(--yellow-border); }
-.kpi-badge.poor   { color: var(--red);    background: var(--red-light);    border: 1px solid var(--red-border); }
+.kpi-badge.excellent { color: #F59E0B; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); }
+.kpi-badge.good      { color: var(--green);  background: var(--green-light);  border: 1px solid var(--green-border); }
+.kpi-badge.ok        { color: var(--yellow); background: var(--yellow-light); border: 1px solid var(--yellow-border); }
+.kpi-badge.poor      { color: var(--red);    background: var(--red-light);    border: 1px solid var(--red-border); }
 
 .kpi-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
   display: inline-block;
 }
-.good .kpi-dot  { background: var(--green); }
-.ok   .kpi-dot  { background: var(--yellow); }
-.poor .kpi-dot  { background: var(--red); }
+.excellent .kpi-dot { background: #F59E0B; }
+.good .kpi-dot      { background: var(--green); }
+.ok   .kpi-dot      { background: var(--yellow); }
+.poor .kpi-dot      { background: var(--red); }
 
 /* ------------------------------------------------------------------ */
 /* Section header                                                       */
@@ -483,16 +486,18 @@ body {
   font-weight: 600;
   flex-shrink: 0;
 }
-.card-badge.good   { color: var(--green);  background: var(--green-light);  border: 1px solid var(--green-border); }
-.card-badge.ok     { color: var(--yellow); background: var(--yellow-light); border: 1px solid var(--yellow-border); }
-.card-badge.poor   { color: var(--red);    background: var(--red-light);    border: 1px solid var(--red-border); }
+.card-badge.excellent { color: #F59E0B; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); }
+.card-badge.good      { color: var(--green);  background: var(--green-light);  border: 1px solid var(--green-border); }
+.card-badge.ok        { color: var(--yellow); background: var(--yellow-light); border: 1px solid var(--yellow-border); }
+.card-badge.poor      { color: var(--red);    background: var(--red-light);    border: 1px solid var(--red-border); }
 
 .card-badge-dot {
   width: 5px; height: 5px; border-radius: 50%;
 }
-.good .card-badge-dot { background: var(--green); }
-.ok   .card-badge-dot { background: var(--yellow); }
-.poor .card-badge-dot { background: var(--red); }
+.excellent .card-badge-dot { background: #F59E0B; }
+.good .card-badge-dot      { background: var(--green); }
+.ok   .card-badge-dot      { background: var(--yellow); }
+.poor .card-badge-dot      { background: var(--red); }
 
 .card-value {
   font-size: 24px;
