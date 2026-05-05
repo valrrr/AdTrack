@@ -1371,6 +1371,7 @@ body {
   .header { padding: 0 12px; height: 48px; }
   .header-left { gap: 8px; }
   .header-right .btn-nav:not(#btn-settings):not(#btn-logout) { display: none; }
+  .header-right .btn-nav span { display: none; }
   .platform-status { display: none; }
   .account-name { max-width: 90px; }
   .btn-nav { min-height: 36px; padding: 5px 10px; }
@@ -1425,9 +1426,24 @@ body {
   .card-value { font-size: 18px; }
   .card-label { font-size: 10px; }
 
-  /* AI panel */
-  .ai-panel-header { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
-  .ai-niche-tag { max-width: 100%; }
+  /* AI panel: 2-row header so Analyze button is never clipped */
+  .ai-panel-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .ai-panel-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: unset;
+    min-width: 0;
+  }
+  .ai-niche-tag { flex: 1; min-width: 0; max-width: 100%; }
+  .btn-ai-edit, .btn-ai-configure { flex-shrink: 0; font-size: 11px; padding: 3px 8px; }
+  .btn-analyze { flex-shrink: 0; padding: 5px 14px; }
   .ai-panel-body { padding: 12px; }
   .air-results { grid-template-columns: 1fr; }
   .air-verdict { font-size: 13px; padding-bottom: 12px; }
